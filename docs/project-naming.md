@@ -14,13 +14,15 @@ Solana backup version 1 keeps its immutable authenticated-data bytes; product na
 
 ## Signed deployment transition
 
-CI publishes only when `DEMO_DEPLOY_ENABLED=true` and `DEMO_DEPLOY_REPOSITORY` equals `a861252012/multi-chain-wallet`. Leave the repository pin unset until the VM and registry transition has been completed. Unit tests and build checks continue to run while publication and live deployment are skipped.
+CI publishes only when `DEMO_DEPLOY_ENABLED=true` and `DEMO_DEPLOY_REPOSITORY` equals `a861252012/multi-chain-wallet`. Leave the repository pin unset until the VM transition is prepared and automatic updates are paused. Unit tests and build checks continue to run while publication and live deployment are skipped.
 
-A repository rename does not update the installed VM scripts, existing container, data directory, registry package visibility or Cosign trust identity. The operator must first preserve a verified encrypted backup and the previous Compose/configuration/image for rollback. Pause the existing update timer and notification dispatcher during the transition. Confirm the new immutable image is anonymously pullable and signed by the exact new workflow identity and commit.
+A repository rename does not update the installed VM scripts, existing container, data directory, registry package visibility or Cosign trust identity. The operator must first preserve a verified encrypted backup and the previous Compose/configuration/image for rollback. Pause the existing update timer and notification dispatcher during the transition, and disable CI release notifications with `DEMO_NOTIFY_ENABLED=false`.
+
+Prepare the new installation and trust settings before setting `DEMO_DEPLOY_REPOSITORY` to the canonical repository. Then trigger a new push to `main` to build, test, publish and sign the first image under the new registry name. Keep VM automation paused. Confirm the new immutable image is anonymously pullable and signed by the exact new workflow identity and commit before using it. The live CI job waits for deployment; if that wait expires during migration, rerun its verification after the VM is ready. Publishing an image alone does not complete the transition.
 
 Install the new scripts and service definitions with `/opt/multi-chain-wallet` as their base. Stop the previous Compose application before starting `multi-chain-wallet-demo`, preserve the full wallet data with its ownership and permissions, and never run both applications against the same wallet. The old `current-image` value is not accepted by the new repository pin: keep it with the previous installation for rollback rather than relabelling its digest as a newly published image. Bootstrap the new installation using a newly verified image. If verification fails, stop the new application and restore the preserved installation.
 
-Read back the deployed `X-App-Version`, wallet state and browser behavior before enabling `DEMO_DEPLOY_REPOSITORY`, the timer and notifications. A passing source/build test does not establish that this VM transition occurred.
+Read back the deployed `X-App-Version`, wallet state and browser behavior before resuming the timer and notifications, including `DEMO_NOTIFY_ENABLED`. A passing source/build test does not establish that this VM transition occurred.
 
 ## Historical evidence
 
