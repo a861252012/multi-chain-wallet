@@ -1,12 +1,14 @@
 # Go 分層與風格
 
+專案名稱、既有資料相容性與部署切換規範見 [project-naming.md](project-naming.md)。
+
 這份文件記錄程式的分層與 Go 寫法；型別邊界和分支寫法參考 [Ardan Labs service 的固定版本](https://github.com/ardanlabs/service/tree/4d02671018b8b6138ceaaa7c40bd66e6d912bcbb)。
 
 ## 套用範圍
 
 | 範圍 | 責任與可檢查依據 |
 |---|---|
-| `cmd/testnet-wallet-lab` | `loadConfig` 集中環境設定解析；main 組裝服務、管理生命週期，不放交易規則。設定測試涵蓋預設值、無效值與 faucet 檔案權限。 |
+| `cmd/multi-chain-wallet` | `loadConfig` 集中環境設定解析；main 組裝服務、管理生命週期，不放交易規則。設定測試涵蓋預設值、無效值與 faucet 檔案權限。 |
 | `internal/web` | HTTP、驗證存取來源、嚴格解碼、狀態碼與 primitive DTO。EVM、Solana、TRON、faucet、observe、diagnostics 都先轉成回應 DTO；不直接編碼交易日誌。分層說明見 `architecture.md`。 |
 | `internal/wallet` | 交易動作、金額、帳戶與地址驗證、簽名、持久化順序與重送政策。`QuoteCommand`、`QuoteID`、`TransactionHash`、交易狀態及鏈別識別型別用於業務運算與查找。 |
 | 儲存邊界 | EVM journal、Solana/TRON journal、scan 各有獨立 disk DTO 與具名轉換。service 持有業務紀錄；讀檔先解析，開啟 journal 仍驗證原始簽名交易。activity 索引只保存已驗證公開 hash。 |

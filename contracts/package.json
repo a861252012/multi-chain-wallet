@@ -1,5 +1,5 @@
 {
-  "name": "testnet-wallet-lab-contracts",
+  "name": "multi-chain-wallet-contracts",
   "private": true,
   "scripts": {
     "compile": "node compile.js",

@@ -1,6 +1,6 @@
 {
   "recordedAt": "2026-09-15T08:27:58.475606+00:00",
-  "scope": "Live transactions sent by Testnet Wallet Lab. Receipt observations are snapshots, not guarantees of future finality.",
+  "scope": "Live transactions sent by Multi-Chain Wallet. Receipt observations are snapshots, not guarantees of future finality.",
   "transactions": [
     {
       "network": "sepolia",

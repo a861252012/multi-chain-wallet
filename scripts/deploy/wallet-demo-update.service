@@ -13,4 +13,4 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=strict
-ReadWritePaths=/opt/testnet-wallet-lab
+ReadWritePaths=/opt/multi-chain-wallet

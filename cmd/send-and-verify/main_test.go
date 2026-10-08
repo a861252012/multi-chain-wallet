@@ -37,7 +37,7 @@ func TestQuoteAndSend(t *testing.T) {
 					wantToken = "override"
 				}
 				user, token, ok := r.BasicAuth()
-				if !ok || user != "flowledger" || token != wantToken {
+				if !ok || user != "multi-chain-wallet" || token != wantToken {
 					t.Errorf("unexpected auth")
 				}
 				if r.Method == http.MethodPost && r.Header.Get("X-Wallet-CSRF") != "csrf" {

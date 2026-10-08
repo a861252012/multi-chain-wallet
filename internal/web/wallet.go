@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/chain"
-	"github.com/a861252012/testnet-wallet-lab/internal/wallet"
+	"github.com/a861252012/multi-chain-wallet/internal/chain"
+	"github.com/a861252012/multi-chain-wallet/internal/wallet"
 )
 
 func isValidHost(host string) bool {
@@ -463,7 +463,7 @@ func registerWalletRoutes(mux *http.ServeMux, ws *wallet.Service) {
 		if r.URL.Query().Get("format") == "csv" {
 			slug := chain.NetworkSlug(ws.ChainID())
 			w.Header().Set("Content-Type", "text/csv; charset=utf-8")
-			w.Header().Set("Content-Disposition", "attachment; filename=flowledger-"+slug+"-activity.csv")
+			w.Header().Set("Content-Disposition", "attachment; filename=multi-chain-wallet-"+slug+"-activity.csv")
 			_ = writeEVMActivityCSV(w, newEVMActivityResponse(result))
 			return
 		}

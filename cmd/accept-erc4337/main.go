@@ -19,8 +19,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/wallet"
-	aa "github.com/a861252012/testnet-wallet-lab/internal/wallet/erc4337"
+	"github.com/a861252012/multi-chain-wallet/internal/wallet"
+	aa "github.com/a861252012/multi-chain-wallet/internal/wallet/erc4337"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"

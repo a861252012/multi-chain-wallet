@@ -4,22 +4,22 @@
 
 - 基底／發布前 X-App-Version：`66ae38bb4721d15b1993cf6343670883061c305b`。
 - 發布後 X-App-Version：`3a55ab854701074f6fb796ba23fe7953b67fbd8e`；HTTP 200，`{"mode":"wallet","status":"ok"}`。
-- [Verify run 35370366472](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35370366472)；push event，全部必要 jobs 真正執行成功，沒有 skipped job。
-- GHCR tag：`ghcr.io/a861252012/testnet-wallet-lab:sha-3a55ab854701074f6fb796ba23fe7953b67fbd8e`。
-- Repository digest：`ghcr.io/a861252012/testnet-wallet-lab@sha256:37ca634d51b67c79445f73d7d5a8109bda569cddc1bbbb6a37ffd0a4b222ec18`。Actions docker push log 與獨立 registry inspect 相符。
+- [Verify run 35370366472](https://github.com/a861252012/multi-chain-wallet/actions/runs/35370366472)；push event，全部必要 jobs 真正執行成功，沒有 skipped job。
+- 歷史映像 tag：`sha-3a55ab854701074f6fb796ba23fe7953b67fbd8e`；原始 registry 路徑見封存紀錄。
+- Repository digest：`sha256:37ca634d51b67c79445f73d7d5a8109bda569cddc1bbbb6a37ffd0a4b222ec18`。Actions docker push log 與獨立 registry inspect 相符。
 
 ## 必要 jobs
 
 | Job | 結果 | 完成 UTC |
 |---|---|---|
-| [vulnerabilities](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35370366472/job/105682630700) | success | 2026-09-18T16:46:18Z |
-| [deployment (ubuntu-latest)](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35370366472/job/105682630883) | success | 2026-09-18T16:47:17Z |
-| [go](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35370366472/job/105682630944) | success | 2026-09-18T16:50:28Z |
-| [deployment (ubuntu-24.04-arm)](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35370366472/job/105682630995) | success | 2026-09-18T16:47:08Z |
-| [solidity](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35370366472/job/105682631846) | success | 2026-09-18T16:45:54Z |
-| [browser](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35370366472/job/105682633357) | success | 2026-09-18T16:48:26Z |
-| [publish](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35370366472/job/105684150805) | success | 2026-09-18T16:52:12Z |
-| [live](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35370366472/job/105684678881) | success | 2026-09-18T16:54:31Z |
+| [vulnerabilities](https://github.com/a861252012/multi-chain-wallet/actions/runs/35370366472/job/105682630700) | success | 2026-09-18T16:46:18Z |
+| [deployment (ubuntu-latest)](https://github.com/a861252012/multi-chain-wallet/actions/runs/35370366472/job/105682630883) | success | 2026-09-18T16:47:17Z |
+| [go](https://github.com/a861252012/multi-chain-wallet/actions/runs/35370366472/job/105682630944) | success | 2026-09-18T16:50:28Z |
+| [deployment (ubuntu-24.04-arm)](https://github.com/a861252012/multi-chain-wallet/actions/runs/35370366472/job/105682630995) | success | 2026-09-18T16:47:08Z |
+| [solidity](https://github.com/a861252012/multi-chain-wallet/actions/runs/35370366472/job/105682631846) | success | 2026-09-18T16:45:54Z |
+| [browser](https://github.com/a861252012/multi-chain-wallet/actions/runs/35370366472/job/105682633357) | success | 2026-09-18T16:48:26Z |
+| [publish](https://github.com/a861252012/multi-chain-wallet/actions/runs/35370366472/job/105684150805) | success | 2026-09-18T16:52:12Z |
+| [live](https://github.com/a861252012/multi-chain-wallet/actions/runs/35370366472/job/105684678881) | success | 2026-09-18T16:54:31Z |
 
 Go job 通過 race、vet、格式與 go fix 差異檢查；Browser job 在 Node 22 實跑 fixtures 與帶 race 的 simulated EVM E2E。兩個 deployment job 分別在 Linux AMD64 與 ARM64 執行隔離映像 smoke。publish 另建置及 smoke 確切發布映像，再推送 GHCR；live 於新版上線後實跑公開 UI。
 
@@ -38,7 +38,7 @@ Go job 通過 race、vet、格式與 go fix 差異檢查；Browser job 在 Node 
 
 ## 證據與最後狀態
 
-此目錄保存 Actions 完整 log、jobs/steps JSON、browser/live artifacts、Go coverage、registry inspect、發布前後 health、UI JSON 與兩張截圖。`SHA256SUMS.json` 為證據檔案雜湊。
+Actions logs、JSON、coverage、registry inspect、health 與截圖的原始位元組封存於固定 Git revision；參見[封存索引](../archive.json)。歷史映像路徑與當時畫面保留於原始證據，不把當日輸出改寫成目前版本。
 
 
-第二階段：公共 Sepolia ETHVault 部署與成功收據、bytecode 核對、原始碼驗證，另行授權設定合約地址，再驗收公開 UI 存入／取回各自的成功收據、事件及前後錢包／合約餘額。
+後續第二階段的公共 Sepolia ETHVault 部署、原始碼驗證與存提結果，另見 [Vault 驗收報告](../vault-sepolia-2026-09-19/REPORT.md)。本頁第一階段仍僅記錄應用程式發布驗收。

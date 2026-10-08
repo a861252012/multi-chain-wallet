@@ -1,6 +1,6 @@
 # Polygon、Solana 發送驗收 — 2026-09-16
 
-兩條鏈各完成一筆原生幣轉帳。使用獨立測試錢包，直接呼叫 FlowLedger 的 `Quote`、`Send`、`History`，再透過公開 RPC 核對交易。這次沒有走瀏覽器發送介面。
+兩條鏈各完成一筆原生幣轉帳。使用獨立測試錢包，直接呼叫 Multi-Chain Wallet 的 `Quote`、`Send`、`History`，再透過公開 RPC 核對交易。這次沒有走瀏覽器發送介面。
 
 | 網路 | 發送金額 | 交易 | 區塊／slot | 結果 | 實際手續費 |
 | --- | --- | --- | --- | --- | --- |
@@ -13,7 +13,7 @@
 
 - Amoy：RPC chain ID 為 `80002`；交易金額為 `1000000000000000` wei，收款地址為 `0x219465ECA5EB591b7587E4B1Aa97F34971206Ab9`。成功收據的 block hash 與同高度區塊一致，`finalized` 區塊已超過交易高度。
 - Solana：genesis hash 符合 Devnet；System Program transfer 的收款地址為 `8MdhSYukGpauTfZPnFC51mi6e9FLm1ndXGm5ztbeVjMF`，金額為 `1000000` lamports。收款餘額增加相同金額，signature status 與 finalized transaction 都沒有執行錯誤。
-- 重新開啟兩個錢包後，FlowLedger 從日誌讀回相同交易，Amoy 顯示 `succeeded`／`finalized=true`，Solana 顯示 `finalized`。
+- 重新開啟兩個錢包後，Multi-Chain Wallet 從日誌讀回相同交易，Amoy 顯示 `succeeded`／`finalized=true`，Solana 顯示 `finalized`。
 
 ## 測試幣來源
 

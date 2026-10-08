@@ -59,7 +59,7 @@ func (c walletClient) request(path string, body any, csrf string) (int, response
 		req.Header.Set("X-Wallet-CSRF", csrf)
 	}
 	if c.token != "" {
-		req.SetBasicAuth("flowledger", c.token)
+		req.SetBasicAuth("multi-chain-wallet", c.token)
 	}
 	res, err := c.client.Do(req)
 	if err != nil {

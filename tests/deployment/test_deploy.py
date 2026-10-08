@@ -9,7 +9,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 SHA = "a" * 40
 DIGEST = "sha256:" + "b" * 64
-OLD = "ghcr.io/a861252012/testnet-wallet-lab@sha256:" + "d" * 64
+OLD = "ghcr.io/a861252012/multi-chain-wallet@sha256:" + "d" * 64
 
 
 class DeployTests(unittest.TestCase):
@@ -21,7 +21,7 @@ class DeployTests(unittest.TestCase):
         self.bin.mkdir()
         self.env = {**os.environ, "FIXTURE": str(self.base), "FIXTURE_MAIN": SHA}
         source = (ROOT / "scripts/deploy/deploy.sh").read_text()
-        source = source.replace("readonly base=/opt/testnet-wallet-lab", "readonly base=" + shlex.quote(str(self.base)))
+        source = source.replace("readonly base=/opt/multi-chain-wallet", "readonly base=" + shlex.quote(str(self.base)))
         source = source.replace("export PATH=/usr/sbin:/usr/bin:/sbin:/bin", "export PATH=" + shlex.quote(str(self.bin) + os.pathsep + os.environ["PATH"]))
         source = source.replace("/usr/local/bin/cosign", shlex.quote(str(self.bin / "cosign")))
         self.script = self.base / "deploy.sh"
@@ -40,9 +40,9 @@ with (base/"calls").open("a") as f: f.write(json.dumps([command,args,os.getenv("
 if command=="curl": print(json.dumps({"sha":os.environ["FIXTURE_MAIN"]}))
 if command=="cosign":
  if os.environ.get("TUF_ROOT") != str(base/".sigstore"): sys.exit(2)
- expected={"--certificate-identity":"https://github.com/a861252012/testnet-wallet-lab/.github/workflows/verify.yml@refs/heads/main", "--certificate-oidc-issuer":"https://token.actions.githubusercontent.com", "--certificate-github-workflow-repository":"a861252012/testnet-wallet-lab", "--certificate-github-workflow-ref":"refs/heads/main", "--certificate-github-workflow-trigger":"push", "--certificate-github-workflow-sha":os.environ["FIXTURE_MAIN"]}
+ expected={"--certificate-identity":"https://github.com/a861252012/multi-chain-wallet/.github/workflows/verify.yml@refs/heads/main", "--certificate-oidc-issuer":"https://token.actions.githubusercontent.com", "--certificate-github-workflow-repository":"a861252012/multi-chain-wallet", "--certificate-github-workflow-ref":"refs/heads/main", "--certificate-github-workflow-trigger":"push", "--certificate-github-workflow-sha":os.environ["FIXTURE_MAIN"]}
  if args[0]!="verify" or any(k not in args or args[args.index(k)+1]!=v for k,v in expected.items()): sys.exit(2)
- if args[-1]!="ghcr.io/a861252012/testnet-wallet-lab@sha256:"+"b"*64: sys.exit(2)
+ if args[-1]!="ghcr.io/a861252012/multi-chain-wallet@sha256:"+"b"*64: sys.exit(2)
  if os.getenv("BAD_SIGNATURE"): sys.exit(1)
 if command=="docker":
  if args[:2]==["image","inspect"]:
@@ -71,7 +71,7 @@ if command=="docker":
     def test_success_records_exact_image(self):
         result = self.run_deploy()
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual((self.base/"current-image").read_text().strip(), "ghcr.io/a861252012/testnet-wallet-lab@"+DIGEST)
+        self.assertEqual((self.base/"current-image").read_text().strip(), "ghcr.io/a861252012/multi-chain-wallet@"+DIGEST)
 
     def test_signature_failure_never_pulls_or_stops(self):
         result = self.run_deploy(BAD_SIGNATURE="1")

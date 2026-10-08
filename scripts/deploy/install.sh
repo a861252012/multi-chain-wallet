@@ -8,7 +8,7 @@ command -v python3 >/dev/null
 command -v curl >/dev/null
 command -v flock >/dev/null
 [[ -x /usr/local/bin/cosign ]] || { echo "Install verified Cosign v3.1.3 at /usr/local/bin/cosign first" >&2; exit 1; }
-base=/opt/testnet-wallet-lab
+base=/opt/multi-chain-wallet
 [[ ! -e "$base" && ! -e /usr/local/sbin/wallet-deploy ]] || { echo 'Already installed; review upgrades manually' >&2; exit 1; }
 root=$(cd "$(dirname "$0")/../.." && pwd)
 install -d -o root -g root -m 0750 "$base"
@@ -25,8 +25,8 @@ umask 077
 python3 - <<'PY'
 import secrets
 from pathlib import Path
-Path('/opt/testnet-wallet-lab/.env').write_text('PUBLIC_ORIGIN=\nWALLET_ACCESS_TOKEN='+secrets.token_hex(32)+'\n')
+Path('/opt/multi-chain-wallet/.env').write_text('PUBLIC_ORIGIN=\nWALLET_ACCESS_TOKEN='+secrets.token_hex(32)+'\n')
 PY
-echo 'Installed. Set PUBLIC_ORIGIN in /opt/testnet-wallet-lab/.env before enabling deployment.'
+echo 'Installed. Set PUBLIC_ORIGIN in /opt/multi-chain-wallet/.env before enabling deployment.'
 echo 'The application token is in that root-only file; keep it for the owner only.'
 echo 'After first release and origin verification: systemctl enable --now wallet-demo-update.timer'

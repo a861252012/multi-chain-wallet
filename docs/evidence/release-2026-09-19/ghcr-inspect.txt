@@ -1,3 +1,0 @@
-Name:      ghcr.io/a861252012/testnet-wallet-lab:sha-3a55ab854701074f6fb796ba23fe7953b67fbd8e
-MediaType: application/vnd.docker.distribution.manifest.v2+json
-Digest:    sha256:37ca634d51b67c79445f73d7d5a8109bda569cddc1bbbb6a37ffd0a4b222ec18

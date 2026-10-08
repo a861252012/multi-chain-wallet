@@ -16,7 +16,7 @@ var (
 	ErrInvalidAddress               = errors.New("地址格式不正確，請輸入 0x 開頭的 40 位十六進位地址")
 	ErrZeroAddress                  = errors.New("不可使用零地址")
 	ErrMalformedChecksum            = errors.New("地址混合大小寫校驗和不正確")
-	ErrWrongChain                   = errors.New("RPC 連到其他網路，已停止操作；Testnet Wallet Lab 僅允許支援的測試網")
+	ErrWrongChain                   = errors.New("RPC 連到其他網路，已停止操作；Multi-Chain Wallet 僅允許支援的測試網")
 	ErrQuoteNotFound                = errors.New("找不到指定的報價或報價已過期")
 	ErrQuoteExpired                 = errors.New("報價已過期，請重新建立報價")
 	ErrQuoteStorageFull             = errors.New("報價數量已達上限 (256)，請稍後重試")

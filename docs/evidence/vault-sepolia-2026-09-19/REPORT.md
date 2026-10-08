@@ -57,7 +57,7 @@ Sourcify 自動轉送至 Etherscan 回報當日 500 次額度已滿；Blockscout
 
 ## 線上啟用與 UI 存提驗收
 
-Oracle 登入恢復後，經使用者同意臨時新增本機 IP/32 TCP 22 規則。VM 仍使用第一階段同一 SHA/digest，但舊 Compose 缺少 vault 映射。僅補上該映射及 `.env` 的 `SEPOLIA_VAULT_ADDRESS`，取得既有 deploy.lock，stop-before-start 重建，verify-demo.py 通過。保留 `/opt/testnet-wallet-lab/wallet` 掛載，沒有刪除 volume。完成後已移除臨時入站規則；見 `ssh-ingress-removed.png`。
+Oracle 登入恢復後，經使用者同意臨時新增本機 IP/32 TCP 22 規則。VM 仍使用第一階段同一 SHA/digest，但舊 Compose 缺少 vault 映射。僅補上該映射及 `.env` 的 `SEPOLIA_VAULT_ADDRESS`，取得既有 deploy.lock，stop-before-start 重建，verify-demo.py 通過。保留 既有 wallet 資料目錄掛載，沒有刪除 volume。完成後已移除臨時入站規則；見 `ssh-ingress-removed.png`。
 
 GitHub `EXPECTED_VAULT_ADDRESS` 與容器設定各自核對為本報告地址；指定完整 release SHA 與地址的 `test:live` 成功，包含桌面合約啟用、Solana/TRON 導覽、手機選單、無水平溢位及頁面錯誤。此為本機對公開站執行既有唯讀驗收，沒有新增或冒稱遠端 Actions run；第一階段 Actions 證據保持原樣。
 
@@ -83,3 +83,6 @@ GitHub `EXPECTED_VAULT_ADDRESS` 與容器設定各自核對為本報告地址；
 - Etherscan 驗證尚未完成：Sourcify 轉送遭當日額度限制，手動條款尚未取得同意；Sourcify exact_match 已完成原始碼驗證。
 - 這是測試網學習實作，未經主網安全審計；沒有使用主網資產或付費服務。
 - 本次僅更新本機文件與證據，沒有 commit/push，線上 SHA 保持第一階段版本。
+
+
+原始收據、執行紀錄、截圖與原始 SHA256SUMS manifest 的固定版本連結及逐檔雜湊，見[封存索引](../archive.json)。本頁僅同步導覽；當日驗收的版本與結果不變。

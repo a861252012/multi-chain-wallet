@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/wallet"
+	"github.com/a861252012/multi-chain-wallet/internal/wallet"
 )
 
 func NewTron(service *wallet.TronService, csrf string) (http.Handler, error) {

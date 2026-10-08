@@ -1,4 +1,4 @@
-# Testnet Wallet Lab architecture
+# Multi-Chain Wallet architecture
 
 ```mermaid
 flowchart LR

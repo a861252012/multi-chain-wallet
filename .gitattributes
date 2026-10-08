@@ -6,9 +6,3 @@
 *.cjs text eol=lf
 *.html text eol=lf
 *.css text eol=lf
-
-# Preserve raw captures and logs covered by the historical evidence checksums.
-docs/evidence/release-2026-09-19/*.headers -text -whitespace
-docs/evidence/vault-sepolia-2026-09-19/*.headers -text -whitespace
-docs/evidence/release-2026-09-19/**/*.log -text -whitespace
-docs/evidence/vault-sepolia-2026-09-19/**/*.log -text -whitespace

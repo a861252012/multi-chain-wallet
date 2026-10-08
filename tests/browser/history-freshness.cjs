@@ -66,7 +66,7 @@ module.exports = async function historyFreshness(context, base) {
 
     // The exchange progress button fetches history independently of refreshWallet.
     transactions = [tx];
-    await page.evaluate(tx => sessionStorage.setItem('flowledger:exchange-flow:', JSON.stringify({
+    await page.evaluate(tx => sessionStorage.setItem('multi-chain-wallet:exchange-flow:', JSON.stringify({
       id: 'history-flow', direction: 'eth-usdc', amount: '0.001', phase: 'wrap',
       pending: {hash: tx.hash, quoteID: tx.quoteId, kind: 'wrap'},
     })), tx);

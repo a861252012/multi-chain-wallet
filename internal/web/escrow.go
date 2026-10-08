@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/wallet"
+	"github.com/a861252012/multi-chain-wallet/internal/wallet"
 )
 
 func registerEscrowRoutes(mux *http.ServeMux, service *wallet.Service, filter func(http.HandlerFunc) http.HandlerFunc) {

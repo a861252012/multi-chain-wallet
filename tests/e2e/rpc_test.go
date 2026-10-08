@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/chain"
+	"github.com/a861252012/multi-chain-wallet/internal/chain"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/eth/ethconfig"

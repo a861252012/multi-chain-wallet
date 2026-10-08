@@ -29,6 +29,16 @@ type solanaKeyFile struct {
 	Ciphertext string `json:"ciphertext"`
 }
 
+// solanaV1AuthDomain defines the immutable wire protocol domain separator for Solana v1 AES-GCM encryption.
+// Wire hex representation: 666c6f776c65646765722d736f6c616e612d76313a (21 bytes).
+// These exact protocol bytes are permanently frozen to preserve backward compatibility with existing backups,
+// independent of the current product name.
+const solanaV1AuthDomain = "\x66\x6c\x6f\x77\x6c\x65\x64\x67\x65\x72\x2d\x73\x6f\x6c\x61\x6e\x61\x2d\x76\x31\x3a"
+
+func solanaV1AuthData(address string) []byte {
+	return []byte(solanaV1AuthDomain + address)
+}
+
 // SLIP-0010 hardened Ed25519 derivation; no secp256k1/EVM key is reused.
 func deriveEd25519(seed []byte, path []uint32) []byte {
 	mac := hmac.New(sha512.New, []byte("ed25519 seed"))
@@ -92,7 +102,7 @@ func (s *SolanaService) encryptSeed(seed []byte, password string) (*solanaKeyFil
 	private := ed25519.NewKeyFromSeed(seed)
 	defer wipeBytes(private)
 	address := sol.PrivateKey(private).PublicKey().String()
-	encrypted := gcm.Seal(nil, nonce, seed, []byte("flowledger-solana-v1:"+address))
+	encrypted := gcm.Seal(nil, nonce, seed, solanaV1AuthData(address))
 	return &solanaKeyFile{1, address, s.n, hex.EncodeToString(salt), hex.EncodeToString(nonce), hex.EncodeToString(encrypted)}, nil
 }
 
@@ -124,7 +134,7 @@ func decryptSolanaKey(data *solanaKeyFile, password string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	seed, err := gcm.Open(nil, nonce, encrypted, []byte("flowledger-solana-v1:"+data.Address))
+	seed, err := gcm.Open(nil, nonce, encrypted, solanaV1AuthData(data.Address))
 	if err != nil {
 		return nil, ErrPasswordMismatch
 	}

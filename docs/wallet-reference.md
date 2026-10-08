@@ -4,11 +4,13 @@
 
 Use this guide to run the wallet, send test assets, manage backups and recover interrupted transactions. The Docker setup below is for localhost.
 
+For an existing installation, follow [project naming and upgrades](project-naming.md) before starting Compose so it uses the existing wallet data volume.
+
 [交易恢復驗證](demo-script.md) · [9 月 15 日歷史驗收](onchain-acceptance-2026-09-15.md) · [9 月 16 日後續驗收](onchain-acceptance-2026-09-16.md) · [程序中止恢復驗證](process-recovery.md)
 
 ## Why this project
 
-Testnet Wallet Lab 處理以下交易生命週期問題：
+Multi-Chain Wallet 處理以下交易生命週期問題：
 
 - RPC 可能已收到交易，但 HTTP response 在回程中遺失。
 - 同一個使用者操作可能因重試、並發請求或程序重啟而被處理多次。
@@ -72,7 +74,7 @@ docker compose run --rm --no-deps app go mod download
 docker compose up -d
 ```
 
-Open <http://localhost:8090> directly. The localhost demo does not require login. Keep the host port bound to `127.0.0.1`. Optionally set `WALLET_ACCESS_TOKEN` (at least 32 characters) to enable a browser session login; CLI clients can use Basic authentication with username `flowledger`. Never commit credentials. `WALLET_DIR=/data/wallet` uses the dedicated `wallet_data` volume. Wallet persistence uses an encrypted keystore and an atomic transaction journal.
+Open <http://localhost:8090> directly. The localhost demo does not require login. Keep the host port bound to `127.0.0.1`. Optionally set `WALLET_ACCESS_TOKEN` (at least 32 characters) to enable a browser session login; CLI clients can use Basic authentication with username `multi-chain-wallet`. Never commit credentials. `WALLET_DIR=/data/wallet` uses the dedicated `wallet_data` volume. Wallet persistence uses an encrypted keystore and an atomic transaction journal.
 
 ```sh
 docker compose ps
@@ -140,7 +142,7 @@ Read-only integration verification (no key or broadcast):
 
 ```sh
 docker compose run --rm --no-deps \
-  -e FLOWLEDGER_LIVE_RPC=https://ethereum-sepolia-rpc.publicnode.com \
+  -e MULTI_CHAIN_WALLET_LIVE_RPC=https://ethereum-sepolia-rpc.publicnode.com \
   app go test ./internal/wallet -run TestSepoliaExchangeReadOnly -v -count=1
 ```
 
@@ -162,7 +164,7 @@ Sources: [OP fee components](https://docs.optimism.io/op-stack/transactions/fees
 
 ## Solana Devnet
 
-Open `/solana/`. This is one independent local SOL account, with BIP-39 + SLIP-0010 Ed25519 path `m/44'/501'/0'/0'` and an empty extra passphrase. It does not reuse the EVM private key or EVM account selector. Runtime seed encryption uses AES-256-GCM and scrypt N=262144/r=8/p=1, a random 32-byte salt and 12-byte nonce. The public address and format version are authenticated. The FlowLedger Solana backup format supports local restore and password changes; it is not Ethereum V3 or a Solana CLI keypair file. Old backups retain their old password.
+Open `/solana/`. This is one independent local SOL account, with BIP-39 + SLIP-0010 Ed25519 path `m/44'/501'/0'/0'` and an empty extra passphrase. It does not reuse the EVM private key or EVM account selector. Runtime seed encryption uses AES-256-GCM and scrypt N=262144/r=8/p=1, a random 32-byte salt and 12-byte nonce. The public address and format version are authenticated. The Multi-Chain Wallet Solana backup format supports local restore and password changes; it is not Ethereum V3 or a Solana CLI keypair file. Old backups retain their old password.
 
 Native SOL transfer only: 9-decimal integer lamports, System Program transfer to an on-curve wallet address, confirmed blockhash, `getFeeForMessage`, pre-sign simulation, signed preflight, and genesis-hash guard. The pinned Devnet genesis is `EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG`. `SOLANA_DEVNET_RPC_URL` may change the provider but not the allowed cluster. Testnet is intended primarily for validator testing; application work uses [Devnet](https://solana.com/docs/references/clusters).
 
@@ -210,12 +212,12 @@ The repository includes `go run ./cmd/send-and-verify` (also available through `
 
 ## Code and references
 
-- `cmd/testnet-wallet-lab`: startup, configuration, shutdown.
+- `cmd/multi-chain-wallet`: startup, configuration, shutdown.
 - `internal/wallet`: mnemonic/keystore, exact amounts, ERC-20 ABI, quotes, signing, journal.
 - `internal/chain`: Sepolia RPC and receipt checks.
 - `internal/web`: HTTP guards and embedded vanilla HTML/CSS/JS.
 
-Go module: `github.com/a861252012/testnet-wallet-lab`. No frontend framework or Node build is required.
+Go module: `github.com/a861252012/multi-chain-wallet`. No frontend framework or Node build is required.
 
 Standards: [BIP-39](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki), [BIP-44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki), [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), [ERC-20](https://eips.ethereum.org/EIPS/eip-20).
 
@@ -228,15 +230,15 @@ npm test --prefix tests/browser
 npm run test:e2e --prefix tests/browser
 ```
 
-`npm test` serves the repository HTML/JS with local mock API responses. It verifies network navigation, address-book text safety, read-only access before setup, RPC failure states, both guided exchange directions, pool selection, response-loss recovery, diagnostics and mobile layout. `npm run test:e2e` separately runs Chromium against a Go server and simulated EVM to check vault deposits/withdrawals, escrow payments/settlement and order recovery. It requires the Go toolchain and runs with the race detector. Both suites use temporary test data without accessing the runtime wallet or public RPC. GitHub Actions in `.github/workflows/verify.yml` runs both suites alongside isolated Go race/vet/coverage checks and Go CLI tests; consult [GitHub Actions](https://github.com/a861252012/testnet-wallet-lab/actions) for actual remote run results.
+`npm test` serves the repository HTML/JS with local mock API responses. It verifies network navigation, address-book text safety, read-only access before setup, RPC failure states, both guided exchange directions, pool selection, response-loss recovery, diagnostics and mobile layout. `npm run test:e2e` separately runs Chromium against a Go server and simulated EVM to check vault deposits/withdrawals, escrow payments/settlement and order recovery. It requires the Go toolchain and runs with the race detector. Both suites use temporary test data without accessing the runtime wallet or public RPC. GitHub Actions in `.github/workflows/verify.yml` runs both suites alongside isolated Go race/vet/coverage checks and Go CLI tests; consult [GitHub Actions](https://github.com/a861252012/multi-chain-wallet/actions) for actual remote run results.
 
 Read-only new-network acceptance:
 
 ```sh
-FLOWLEDGER_LIVE_NETWORKS=1 go test -run '^TestAdditionalNetworksReadOnly$' -v -count=1 ./internal/chain
+MULTI_CHAIN_WALLET_LIVE_NETWORKS=1 go test -run '^TestAdditionalNetworksReadOnly$' -v -count=1 ./internal/chain
 ```
 
-`FLOWLEDGER_SOLANA_LIVE_SEND=1 go test -run '^TestSolanaDevnetSendAcceptance$' -v -count=1 ./internal/wallet` is an explicit **Devnet write opt-in**: it creates a disposable test wallet, requests faucet SOL and self-transfers. A faucet refusal is reported as SKIP, never outgoing acceptance. Do not include that opt-in in routine CI.
+`MULTI_CHAIN_WALLET_SOLANA_LIVE_SEND=1 go test -run '^TestSolanaDevnetSendAcceptance$' -v -count=1 ./internal/wallet` is an explicit **Devnet write opt-in**: it creates a disposable test wallet, requests faucet SOL and self-transfers. A faucet refusal is reported as SKIP, never outgoing acceptance. Do not include that opt-in in routine CI.
 
 ## Polygon Amoy and TRON Shasta
 
@@ -250,10 +252,10 @@ FLOWLEDGER_LIVE_NETWORKS=1 go test -run '^TestAdditionalNetworksReadOnly$' -v -c
 
 Official sources: [Polygon Amoy configuration](https://docs.polygon.technology/pos/reference/rpc-endpoints), [TRON networks](https://developers.tron.network/docs/networks), [resource model](https://developers.tron.network/docs/resource-model), [TRON protobuf schema](https://github.com/tronprotocol/protocol/blob/master/core/Tron.proto).
 
-Read-only acceptance: `FLOWLEDGER_LIVE_NETWORKS=1 go test -run '^TestAdditionalNetworksReadOnly$/80002$' -v -count=1 ./internal/chain` and `FLOWLEDGER_LIVE_TRON=1 go test -run '^TestTronShastaReadOnly$' -v -count=1 ./internal/wallet`. These do not sign or broadcast. See [September 15 live acceptance](onchain-acceptance-2026-09-15.md) for outgoing Shasta transactions and the [September 16 follow-up](onchain-acceptance-2026-09-16.md) for the later Amoy native transfer; neither report is a new verification run.
+Read-only acceptance: `MULTI_CHAIN_WALLET_LIVE_NETWORKS=1 go test -run '^TestAdditionalNetworksReadOnly$/80002$' -v -count=1 ./internal/chain` and `MULTI_CHAIN_WALLET_LIVE_TRON=1 go test -run '^TestTronShastaReadOnly$' -v -count=1 ./internal/wallet`. These do not sign or broadcast. See [September 15 live acceptance](onchain-acceptance-2026-09-15.md) for outgoing Shasta transactions and the [September 16 follow-up](onchain-acceptance-2026-09-16.md) for the later Amoy native transfer; neither report is a new verification run.
 
 ## Interface preferences
 
 The wallet uses a task-based workspace: an overview, send, receive, exchange, test funding, activity, and settings. Advanced diagnostics and setup details are available on demand. English, Simplified Chinese, and Traditional Chinese (Taiwan) can be switched without reloading or clearing form inputs. Light/dark appearance and language preferences persist in this browser across wallet pages.
 
-UI translations are maintained in `internal/web/static/messages.js`, with Traditional Chinese as the source text and `i18n.js` handling display conversion. Add new UI messages to the table; keep user-defined names under `translate="no"`, and leave API values, amounts, addresses, signing data and unknown external errors unchanged. Set `FLOWLEDGER_UI_SCREENSHOTS` to an output directory when running the browser tests to save the optional English desktop/mobile, light/dark mock screenshots. These screenshots are UI fixtures, not chain acceptance evidence.
+UI translations are maintained in `internal/web/static/messages.js`, with Traditional Chinese as the source text and `i18n.js` handling display conversion. Add new UI messages to the table; keep user-defined names under `translate="no"`, and leave API values, amounts, addresses, signing data and unknown external errors unchanged. Set `MULTI_CHAIN_WALLET_UI_SCREENSHOTS` to an output directory when running the browser tests to save the optional English desktop/mobile, light/dark mock screenshots. These screenshots are UI fixtures, not chain acceptance evidence.

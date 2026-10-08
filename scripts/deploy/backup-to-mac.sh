@@ -20,14 +20,14 @@ ssh -i "$HOME/.ssh/wallet-demo-admin" -o IdentitiesOnly=yes \
   -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/wallet-demo-known-hosts" \
   -o ConnectTimeout=10 "ubuntu@$1" 'sudo bash -s' <<'REMOTE' | age -r "$recipient" -o "$output.partial"
 set -euo pipefail
-cd /opt/testnet-wallet-lab
+cd /opt/multi-chain-wallet
 exec 9>deploy.lock
 flock -w 180 9
-running=$(docker inspect --format '{{.State.Running}}' testnet-wallet-demo-app-1)
+running=$(docker inspect --format '{{.State.Running}}' multi-chain-wallet-demo-app-1)
 [[ "$running" == true ]] || { echo 'Application is not running; investigate before backup' >&2; exit 1; }
 # Always bring the application back even if archive creation or transfer fails.
-trap 'docker start testnet-wallet-demo-app-1 >/dev/null' EXIT
-docker stop -t 45 testnet-wallet-demo-app-1 >/dev/null
+trap 'docker start multi-chain-wallet-demo-app-1 >/dev/null' EXIT
+docker stop -t 45 multi-chain-wallet-demo-app-1 >/dev/null
 tar --exclude='wallet/.lock' -czf - wallet .env current-image compose.demo.yaml verify-demo.py
 REMOTE
 age -d -i "$keys/backup-age.key" "$output.partial" | tar -tzf - >/dev/null

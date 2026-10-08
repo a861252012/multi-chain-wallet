@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/a861252012/testnet-wallet-lab/internal/wallet"
+	"github.com/a861252012/multi-chain-wallet/internal/wallet"
 	"net/http/httptest"
 	"strings"
 	"testing"

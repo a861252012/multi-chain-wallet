@@ -1,0 +1,302 @@
+{
+  "sourceRevision": "d338c548a7c94b9d2ef66fb874baa027e77ae1a1",
+  "purpose": "Immutable historical evidence. Files retain their original bytes and historical labels at these pinned URLs; current project branding does not rewrite past results.",
+  "files": {
+    "docs/evidence/release-2026-09-19/SHA256SUMS.json": {
+      "sha256": "ea48bcd2265f328dd908f3915b167f604c267b9d47634d9d1e5bd398791e3c6a",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/SHA256SUMS.json"
+    },
+    "docs/evidence/release-2026-09-19/actions-final.json": {
+      "sha256": "60b1cd98b3951ba774303e3493aa8ccd15edc170b2231cc1ad506d3e6f6ce7fe",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/actions-final.json"
+    },
+    "docs/evidence/release-2026-09-19/actions.log": {
+      "sha256": "215da6de3c64cf93de93e819eb271fa7f9ad6796ee97ad248787d54e91fb8660",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/actions.log"
+    },
+    "docs/evidence/release-2026-09-19/branch-before.json": {
+      "sha256": "164d6da4605e932122c0c0f2db88298e007e8ee95d4ca8a6d0584e4a8fbb8860",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/branch-before.json"
+    },
+    "docs/evidence/release-2026-09-19/browser-test-logs/browser-e2e.log": {
+      "sha256": "27aac6098d45b393bbec58b357ed361d6140be0f5f536929035db2b23c593ed2",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/browser-test-logs/browser-e2e.log"
+    },
+    "docs/evidence/release-2026-09-19/browser-test-logs/browser-fixtures.log": {
+      "sha256": "1f566e5adf9f656f76e4b43ae942fd08c8dbff60970262159ecf3a70638d1d80",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/browser-test-logs/browser-fixtures.log"
+    },
+    "docs/evidence/release-2026-09-19/capture-ui.cjs": {
+      "sha256": "f2871f55cbe3bd825561dbeba142d83dada6a5fa52b1abfd53d7be9f856429ca",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/capture-ui.cjs"
+    },
+    "docs/evidence/release-2026-09-19/capture-ui.log": {
+      "sha256": "ebd856623bdeb6381f80db092c6baf268b2f1308ea1175dcb5a0256e4ef34ccd",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/capture-ui.log"
+    },
+    "docs/evidence/release-2026-09-19/desktop-vault.png": {
+      "sha256": "aeb7fca9a0141ee3a5becddcf1baaf7082a1e1de331dbc73567f87f6110d0f70",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/desktop-vault.png"
+    },
+    "docs/evidence/release-2026-09-19/ghcr-inspect.txt": {
+      "sha256": "3461e0a3fd72c2dcc6f5c24f1ae54209f887a57f14463a9d2d7aee0597c73f71",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/ghcr-inspect.txt"
+    },
+    "docs/evidence/release-2026-09-19/git-status-final.txt": {
+      "sha256": "ed79ab720c05c7d311d3e09f9be1945f9c7d98fc6d884ecd11219d619a399410",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/git-status-final.txt"
+    },
+    "docs/evidence/release-2026-09-19/go-coverage/coverage.out": {
+      "sha256": "c9bff31fb8a6b545b64b3d6e4c2775f08a679ba72e949cf2c33d88e1890de8b3",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/go-coverage/coverage.out"
+    },
+    "docs/evidence/release-2026-09-19/health-after.headers": {
+      "sha256": "552c96bd195fa07a2f8b43984eb855d80ea60cf1594c70c0c01687d2dd2a26c6",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/health-after.headers"
+    },
+    "docs/evidence/release-2026-09-19/health-after.json": {
+      "sha256": "7a0543bcdf937b08d9cff31b506b04b6833b88cc241ad13a760272a163ba9216",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/health-after.json"
+    },
+    "docs/evidence/release-2026-09-19/health-before.headers": {
+      "sha256": "521e1dde2a0b69f0f308c8e1c4d09ab274360b56bdbd752302f82d46e1c3b0aa",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/health-before.headers"
+    },
+    "docs/evidence/release-2026-09-19/health-before.json": {
+      "sha256": "7a0543bcdf937b08d9cff31b506b04b6833b88cc241ad13a760272a163ba9216",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/health-before.json"
+    },
+    "docs/evidence/release-2026-09-19/live-ui-test-log/live.log": {
+      "sha256": "6ceb153fb97bf250fa02d1ef9965fb5b0bee81aac339532c55dd114941913579",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/live-ui-test-log/live.log"
+    },
+    "docs/evidence/release-2026-09-19/mobile-vault.png": {
+      "sha256": "15fbdb025b5f17722f45166c4e6db3af57dfb1d153e846fe750ea194a465ba0c",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/mobile-vault.png"
+    },
+    "docs/evidence/release-2026-09-19/rules-before.json": {
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/rules-before.json"
+    },
+    "docs/evidence/release-2026-09-19/ui-evidence.json": {
+      "sha256": "ebd856623bdeb6381f80db092c6baf268b2f1308ea1175dcb5a0256e4ef34ccd",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/ui-evidence.json"
+    },
+    "docs/evidence/release-2026-09-19/variables-before.json": {
+      "sha256": "00b1d4a22c57c49a6692a8938d58968483e5a1b3cdeea5a9ea56be5b9f44d89c",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/variables-before.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/SHA256SUMS.json": {
+      "sha256": "7861e893a0e3a5ce33209133d9607a3647b187ce93478abdebed1ab0c41c447a",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/SHA256SUMS.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/acceptance-wallet.json": {
+      "sha256": "3b346f9bc39454f67af0af79e1adfe4a4e32a91a309385ee1dc81874b272ead9",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/acceptance-wallet.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/accounts-before.json": {
+      "sha256": "4b7ac99d81f4d49608e0a58fdf573c8bf1a9adaf60fe5e7e6e141ec8a7231f07",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/accounts-before.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/after-deposit.json": {
+      "sha256": "9f5567a9a898add2988f0a9939dbdf4ad93e2213359ce75bf4e7899fb8ed44d4",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/after-deposit.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/after-withdraw.json": {
+      "sha256": "84875456c21fb8f34ee6db9799364cbb0ba66280b7147ea3467be99d65067cd9",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/after-withdraw.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/baseline.json": {
+      "sha256": "373ce6c0c086e4630278ce8bfd535d2d616142ca4e06861629518aae54388dd9",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/baseline.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/chain-preflight.json": {
+      "sha256": "b6fad6c3ba501f11b350d847791775a45934f753a94ba3cf1e5e96e20fb20986",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/chain-preflight.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/check-deployment.cjs": {
+      "sha256": "25d1869dafd379a72029f63e443f4726657cf30e25016f2cfd8fb7b0c5c4962a",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/check-deployment.cjs"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/compiled-ETHVault.json": {
+      "sha256": "b031491520d1293a822898d417a1a89667aa422a8a0585b46f61705ead798f93",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/compiled-ETHVault.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/compiler-input.json": {
+      "sha256": "3bebfa61f748c59ffb6a815987d0f2e81a022b9608f75932f0b586c6e8c1b21c",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/compiler-input.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deploy.go": {
+      "sha256": "51f98585094fa4f876110031d56db5e205a3bce7c109ccdc4f6a18902dc156b4",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deploy.go"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deployment-preflight.json": {
+      "sha256": "f5f9cc111e8739538ce28a4e94729b6fc917dff5625b273b727a37134e9253e5",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deployment-preflight.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deployment-receipt.json": {
+      "sha256": "c066202ef84bb8c5a44e6aed88e5fa1fe6f065773a4466ad31226e4d17645279",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deployment-receipt.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deployment-submitted.json": {
+      "sha256": "53c7e4db6a7f02688987d258fcd213b5e4d4e5077f2d6c388bcb8397b50d17ad",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deployment-submitted.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deployment-transaction.json": {
+      "sha256": "81b65cf990e7450c2482c32242b54818e3b505811bd20e89134b52fc6b86afee",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deployment-transaction.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deployment-verification.json": {
+      "sha256": "9de1ca901d3419071bc284f3db0619246bee7064fe909237f98b8965c6957c7a",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deployment-verification.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deposit-receipt.json": {
+      "sha256": "6136de35436c6207a8faff450477b63ba7e0cfff0c630f5fd605400aac7143fe",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deposit-receipt.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deposit-review.png": {
+      "sha256": "950619f683fbb878242acf279df06a3d3e72ff9368ae744ec98daf27ae341ca7",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deposit-review.png"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deposit-success.png": {
+      "sha256": "4aadb06d88adefa7b39d8a00a933ca3248b373ba4c9755aa6c226bffcfed88f4",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deposit-success.png"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/deposit-verification.json": {
+      "sha256": "7b256599196c35cf3ba715572479c021ccce81bb7bb65715ab0d4a3ba8bc40da",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/deposit-verification.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/enable-vault.py": {
+      "sha256": "a423d35f247ede9aa5db0727301027ccb6641c575ffbfbc160514439db189f96",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/enable-vault.py"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/expected-vault-address.txt": {
+      "sha256": "460123835f370d4899db21c39d8911dea0968289e8439b45d61e540cc9ae4093",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/expected-vault-address.txt"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/flow-consistency.json": {
+      "sha256": "fa8c61cbc5bf55e5b6c663423df6e5aca5f3b4d750db3f7a0b8ab1bdfbb57c38",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/flow-consistency.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/funding-receipt.json": {
+      "sha256": "cfdce8dadc03195fec473011a3eb2a7e2873c0f52f112878e774ba9859e11e40",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/funding-receipt.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/funding-ui.png": {
+      "sha256": "db00d6833365692f162f6712e97d29b006257618e222bc9ce27d2ae9db7edd5c",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/funding-ui.png"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/git-status.txt": {
+      "sha256": "81d37a2376ff098481a20ef720dc282fcdd382208519e5d84171336a08e1e938",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/git-status.txt"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/health-after.headers": {
+      "sha256": "2d67c5e783597601c04355106bb080cfc6871fc13f67a9d12f78c6cc6cfce3c4",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/health-after.headers"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/health-after.json": {
+      "sha256": "7a0543bcdf937b08d9cff31b506b04b6833b88cc241ad13a760272a163ba9216",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/health-after.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/health-before.headers": {
+      "sha256": "f59d2b80546be0ead0cce6cce19f74d3493d01a5250af9683877b527dbf41c86",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/health-before.headers"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/health-before.json": {
+      "sha256": "0d57204327f886ec607f5f459086cd6e46de1a0cc5ee370aa09037c0498b51c3",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/health-before.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/health-current.json": {
+      "sha256": "0d57204327f886ec607f5f459086cd6e46de1a0cc5ee370aa09037c0498b51c3",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/health-current.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/history-final.json": {
+      "sha256": "30d384a04f4ecf328e5a3a3515299eaa2ed34a405c1bd7c09a4bd9822cd35638",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/history-final.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/live-enabled.log": {
+      "sha256": "33c6cdfb233523bdee8b8726d53b78c47d0d12d0e3ee517e00d60b955d20fa20",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/live-enabled.log"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/network-before.json": {
+      "sha256": "443cf77ea765c136f5ff3328f7372845daad3689bc1844e31880afda6512e6ff",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/network-before.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/preflight.go": {
+      "sha256": "22a241580adbb405eebdfe308360c1069b954f3119aa578b25f8d1d221c49820",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/preflight.go"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/prepare-wallet.cjs": {
+      "sha256": "9df25b0a2301bc529dcabd0b9daa44a8a82ce81647a0c12ebba874e80d6109b6",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/prepare-wallet.cjs"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/runtime-enable.log": {
+      "sha256": "18d158b3d1b34cf146f5595216175507f57afa9d98f087bb72ad504a92ac8954",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/runtime-enable.log"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/snapshot.cjs": {
+      "sha256": "01d52ed66cea0579fdc29da7a3840c3a07409a67fdd101322f55b436b8d682b0",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/snapshot.cjs"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/sourcify-contract.json": {
+      "sha256": "a3061adcf10e5083094e4f9b0016270b0f0edb294222ed29f5ded8f1b611a81e",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/sourcify-contract.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/sourcify-request.json": {
+      "sha256": "10e3fbad694bfdd4d5269b52c79da862696225e142c2b2578a81bd35941539bf",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/sourcify-request.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/sourcify-result.json": {
+      "sha256": "57c43acde7968444dd0d44de0086e0557b8d3c354c4162352c7a0e235e3a8f3b",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/sourcify-result.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/sourcify-submission.json": {
+      "sha256": "875ea60cff4a396b4872ecba54fa129118017ceeac8460ba7def91a0f92776d2",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/sourcify-submission.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/ssh-ingress-removed.png": {
+      "sha256": "3b7ba7da9a96bec11232fd034080f4a3a5b815efc6e7f875ecb1bcfe3faca27e",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/ssh-ingress-removed.png"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/vault-before.json": {
+      "sha256": "267982bdcb20eacf200a51a1a64ce0d15284c6d220f1342309d9f14f19dafa70",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/vault-before.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/vault-current.json": {
+      "sha256": "267982bdcb20eacf200a51a1a64ce0d15284c6d220f1342309d9f14f19dafa70",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/vault-current.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/vault-enabled.json": {
+      "sha256": "d2de9632f23a640fc98e23f15c18ac9eebc56877d6a32d632ef6c1fce6b6a714",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/vault-enabled.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/verify-flow.cjs": {
+      "sha256": "4ea2bae6b4360eebf8f368b19cc99933add4697d3d01fa3eba14ca61bd0749b9",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/verify-flow.cjs"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/withdraw-receipt.json": {
+      "sha256": "7f1a6ba19126ce86753e8938cf0ec01487075893756d4f48c0b7e25f1ee6bb81",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/withdraw-receipt.json"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/withdraw-review.png": {
+      "sha256": "250c92f2ac890352e93f103aabe82f56b1afb58fdd897c57a4ae03d8b99ee6b4",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/withdraw-review.png"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/withdraw-success.png": {
+      "sha256": "7414d0d20212bf7cb5b099549592b69f230121d349df28108eaae4b2af355fe9",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/withdraw-success.png"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/withdraw-verification.json": {
+      "sha256": "c5a5577b2d119ec3044fa6668748ae25bc9f8ec1ec5315032795db10cb630322",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/withdraw-verification.json"
+    },
+    "docs/evidence/release-2026-09-19/REPORT.md": {
+      "sha256": "a73a822e9c16ccc5ae93993b5aa007c3510728caa7d88241ce3e636389613466",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/release-2026-09-19/REPORT.md"
+    },
+    "docs/evidence/vault-sepolia-2026-09-19/REPORT.md": {
+      "sha256": "0401500735f14abdbc06dd0bae94dc8cb11bba2f91055431cf882dff4bd4231b",
+      "url": "https://github.com/a861252012/multi-chain-wallet/blob/d338c548a7c94b9d2ef66fb874baa027e77ae1a1/docs/evidence/vault-sepolia-2026-09-19/REPORT.md"
+    }
+  }
+}

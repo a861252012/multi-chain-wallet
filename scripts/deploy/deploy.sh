@@ -3,8 +3,8 @@
 set -euo pipefail
 export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 unset DOCKER_HOST DOCKER_CONTEXT DOCKER_CONFIG COMPOSE_FILE COMPOSE_PROJECT_NAME COMPOSE_PROFILES
-readonly base=/opt/testnet-wallet-lab
-readonly repository=ghcr.io/a861252012/testnet-wallet-lab
+readonly base=/opt/multi-chain-wallet
+readonly repository=ghcr.io/a861252012/multi-chain-wallet
 [[ $# == 2 && $1 =~ ^sha256:[a-f0-9]{64}$ && $2 =~ ^[a-f0-9]{40}$ ]] || { echo 'Invalid deployment arguments' >&2; exit 2; }
 readonly image="$repository@$1"
 readonly revision="$2"
@@ -12,14 +12,14 @@ cd "$base"
 exec 9>deploy.lock
 flock -w 180 9
 # Query inside the deployment lock; a slower old CI run must not overwrite main.
-head=$(curl --fail --silent --show-error --max-time 20 -H 'Cache-Control: no-cache' https://api.github.com/repos/a861252012/testnet-wallet-lab/commits/main | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')
+head=$(curl --fail --silent --show-error --max-time 20 -H 'Cache-Control: no-cache' https://api.github.com/repos/a861252012/multi-chain-wallet/commits/main | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')
 [[ "$head" == "$revision" ]] || { echo 'Refusing stale commit; main has moved' >&2; exit 1; }
 # A tag and an OCI revision label are attacker-controlled registry metadata.
 # Verify the exact digest, workflow identity and source commit before any pull/stop.
 TUF_ROOT="$base/.sigstore" /usr/local/bin/cosign verify \
-  --certificate-identity 'https://github.com/a861252012/testnet-wallet-lab/.github/workflows/verify.yml@refs/heads/main' \
+  --certificate-identity 'https://github.com/a861252012/multi-chain-wallet/.github/workflows/verify.yml@refs/heads/main' \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-  --certificate-github-workflow-repository 'a861252012/testnet-wallet-lab' \
+  --certificate-github-workflow-repository 'a861252012/multi-chain-wallet' \
   --certificate-github-workflow-ref 'refs/heads/main' \
   --certificate-github-workflow-trigger 'push' \
   --certificate-github-workflow-sha "$revision" \
@@ -30,7 +30,7 @@ actual=$(docker image inspect --format '{{index .Config.Labels "org.opencontaine
 previous=''
 if [[ -f current-image ]]; then
   previous=$(cat current-image)
-  [[ "$previous" =~ ^ghcr.io/a861252012/testnet-wallet-lab@sha256:[a-f0-9]{64}$ ]] || exit 2
+  [[ "$previous" =~ ^ghcr.io/a861252012/multi-chain-wallet@sha256:[a-f0-9]{64}$ ]] || exit 2
 fi
 compose() { APP_IMAGE="$1" docker compose --env-file "$base/.env" -f "$base/compose.demo.yaml" "${@:2}"; }
 verify() {

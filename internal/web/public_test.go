@@ -34,7 +34,7 @@ func TestPublicDemoProtectsAllPrivateRouteFamilies(t *testing.T) {
 	}
 	for _, path := range []string{"/api/wallet", "/solana/api/status", "/tron/api/status", "/accounts/test/api/wallet"} {
 		r := httptest.NewRequest("GET", "http://wallet.example"+path, nil)
-		r.SetBasicAuth("flowledger", token)
+		r.SetBasicAuth("multi-chain-wallet", token)
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
 		if w.Code != 204 {
@@ -69,7 +69,7 @@ func TestPublicNavigationAndSeparateBudgets(t *testing.T) {
 		}
 	}
 	r = httptest.NewRequest("GET", "http://wallet.example/api/wallet", nil)
-	r.SetBasicAuth("flowledger", token)
+	r.SetBasicAuth("multi-chain-wallet", token)
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	if w.Code != 204 {

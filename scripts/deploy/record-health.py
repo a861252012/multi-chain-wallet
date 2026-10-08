@@ -18,7 +18,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 def health(url, host=None):
     started = time.monotonic()
-    headers = {"User-Agent": "FlowLedger-health/1.0"}
+    headers = {"User-Agent": "multi-chain-wallet-health/1.0"}
     if host:
         headers["Host"] = host
     request = urllib.request.Request(url, headers=headers)
@@ -64,7 +64,7 @@ def snapshot():
               "services": command(["systemctl", "show", "cloudflared.service", "docker.service",
                                     "wallet-demo-update.service", "-p", "Id", "-p", "ActiveState", "-p", "SubState",
                                     "-p", "Result", "-p", "NRestarts", "-p", "MemoryCurrent", "-p", "MemoryPeak"])}
-    containers = command(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=testnet-wallet-demo",
+    containers = command(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=multi-chain-wallet-demo",
                           "--filter", "label=com.docker.compose.service=app"])
     result["containers"] = []
     for container in containers.get("output", "").splitlines()[:4]:
@@ -80,7 +80,7 @@ def snapshot():
         result["container_error"] = containers
     # Bounded time window catches OOM/die/restart even after automatic recovery.
     events = command(["docker", "events", "--since", str(now - 120), "--until", str(now),
-                      "--filter", "type=container", "--filter", "label=com.docker.compose.project=testnet-wallet-demo",
+                      "--filter", "type=container", "--filter", "label=com.docker.compose.project=multi-chain-wallet-demo",
                       "--format", '{{.Time}} {{.Action}} {{.Actor.ID}}'])
     result["events"] = []
     if "error" in events:

@@ -7,16 +7,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/chain"
+	"github.com/a861252012/multi-chain-wallet/internal/chain"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 // Opt-in read-only integration check. No key, wallet, signature or broadcast is used.
 func TestSepoliaExchangeReadOnly(t *testing.T) {
-	endpoint := os.Getenv("FLOWLEDGER_LIVE_RPC")
+	endpoint := os.Getenv("MULTI_CHAIN_WALLET_LIVE_RPC")
 	if endpoint == "" {
-		t.Skip("set FLOWLEDGER_LIVE_RPC to run read-only Sepolia contract checks")
+		t.Skip("set MULTI_CHAIN_WALLET_LIVE_RPC to run read-only Sepolia contract checks")
 	}
 	c, err := chain.New(endpoint)
 	if err != nil {

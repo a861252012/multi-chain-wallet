@@ -19,8 +19,8 @@ func TestRequireAccessToken(t *testing.T) {
 	}{
 		{name: "missing", want: http.StatusUnauthorized},
 		{name: "wrong user", username: "admin", password: token, want: http.StatusUnauthorized},
-		{name: "wrong token", username: "flowledger", password: token + "x", want: http.StatusUnauthorized},
-		{name: "valid", username: "flowledger", password: token, want: http.StatusNoContent},
+		{name: "wrong token", username: "multi-chain-wallet", password: token + "x", want: http.StatusUnauthorized},
+		{name: "valid", username: "multi-chain-wallet", password: token, want: http.StatusNoContent},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "http://localhost/", nil)

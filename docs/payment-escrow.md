@@ -59,7 +59,7 @@
 npm ci --ignore-scripts --prefix contracts
 npm run check --prefix contracts
 go test -race -count=1 ./contracts
-go test -race -count=1 -run 'TestEscrow' ./internal/wallet ./internal/web ./cmd/testnet-wallet-lab
+go test -race -count=1 -run 'TestEscrow' ./internal/wallet ./internal/web ./cmd/multi-chain-wallet
 go test -race -count=1 -run '^TestE2EEscrow(Payment|OrderFinality)' ./tests/e2e
 npm ci --ignore-scripts --prefix tests/browser
 (cd tests/browser && npx playwright install chromium)

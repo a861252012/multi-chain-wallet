@@ -19,14 +19,14 @@ jobs:
             printf 'Remove these ignored files from Git tracking:\n%s\n' "$ignored"
             exit 1
           fi
-      - run: docker build -t flowledger-test .
-      - run: docker run --rm -v "$PWD:/app:ro" -v test_modules:/go/pkg/mod flowledger-test go mod download
-      - run: mkdir -p /tmp/flowledger-results
-      - run: docker run --rm --network none -v "$PWD:/app:ro" -v test_modules:/go/pkg/mod:ro -v /tmp/flowledger-results:/results -e GOCACHE=/tmp/cache flowledger-test sh -c 'go test -race -count=1 -coverprofile=/results/coverage.out ./... && go vet ./... && test -z "$(gofmt -l cmd internal contracts tests)" && go fix -diff ./... > /results/gofix.diff && test ! -s /results/gofix.diff'
+      - run: docker build -t multi-chain-wallet-test .
+      - run: docker run --rm -v "$PWD:/app:ro" -v test_modules:/go/pkg/mod multi-chain-wallet-test go mod download
+      - run: mkdir -p /tmp/multi-chain-wallet-results
+      - run: docker run --rm --network none -v "$PWD:/app:ro" -v test_modules:/go/pkg/mod:ro -v /tmp/multi-chain-wallet-results:/results -e GOCACHE=/tmp/cache multi-chain-wallet-test sh -c 'go test -race -count=1 -coverprofile=/results/coverage.out ./... && go vet ./... && test -z "$(gofmt -l cmd internal contracts tests)" && go fix -diff ./... > /results/gofix.diff && test ! -s /results/gofix.diff'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: go-coverage
-          path: /tmp/flowledger-results/coverage.out
+          path: /tmp/multi-chain-wallet-results/coverage.out
   solidity:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -81,7 +81,7 @@ jobs:
       - run: python3 tests/deployment/smoke.py wallet-smoke "$GITHUB_SHA"
   publish:
     needs: [go, solidity, browser, deployment, vulnerabilities]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEMO_DEPLOY_ENABLED == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEMO_DEPLOY_ENABLED == 'true' && vars.DEMO_DEPLOY_REPOSITORY == github.repository
     runs-on: ${{ vars.DEMO_RUNNER || 'ubuntu-latest' }}
     timeout-minutes: 20
     permissions:
@@ -97,15 +97,15 @@ jobs:
           cosign-release: v3.1.3
       - name: Build and test exact release image
         run: |
-          docker build -f Dockerfile.deploy --build-arg APP_VERSION="$GITHUB_SHA" -t "ghcr.io/a861252012/testnet-wallet-lab:sha-$GITHUB_SHA" .
-          python3 tests/deployment/smoke.py "ghcr.io/a861252012/testnet-wallet-lab:sha-$GITHUB_SHA" "$GITHUB_SHA"
+          docker build -f Dockerfile.deploy --build-arg APP_VERSION="$GITHUB_SHA" -t "ghcr.io/a861252012/multi-chain-wallet:sha-$GITHUB_SHA" .
+          python3 tests/deployment/smoke.py "ghcr.io/a861252012/multi-chain-wallet:sha-$GITHUB_SHA" "$GITHUB_SHA"
       - name: Publish immutable image
         id: push
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          image="ghcr.io/a861252012/testnet-wallet-lab:sha-$GITHUB_SHA"
+          image="ghcr.io/a861252012/multi-chain-wallet:sha-$GITHUB_SHA"
           docker push "$image"
           ref=$(docker image inspect --format '{{index .RepoDigests 0}}' "$image")
           digest=${ref#*@}
@@ -115,12 +115,12 @@ jobs:
         env:
           RELEASE_DIGEST: ${{ steps.push.outputs.digest }}
         run: |
-          image="ghcr.io/a861252012/testnet-wallet-lab@$RELEASE_DIGEST"
+          image="ghcr.io/a861252012/multi-chain-wallet@$RELEASE_DIGEST"
           cosign sign --yes "$image"
           cosign verify \
-            --certificate-identity 'https://github.com/a861252012/testnet-wallet-lab/.github/workflows/verify.yml@refs/heads/main' \
+            --certificate-identity 'https://github.com/a861252012/multi-chain-wallet/.github/workflows/verify.yml@refs/heads/main' \
             --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-            --certificate-github-workflow-repository 'a861252012/testnet-wallet-lab' \
+            --certificate-github-workflow-repository 'a861252012/multi-chain-wallet' \
             --certificate-github-workflow-ref 'refs/heads/main' \
             --certificate-github-workflow-trigger 'push' \
             --certificate-github-workflow-sha "$GITHUB_SHA" \
@@ -135,7 +135,7 @@ jobs:
         run: docker logout ghcr.io
   live:
     needs: publish
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEMO_DEPLOY_ENABLED == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEMO_DEPLOY_ENABLED == 'true' && vars.DEMO_DEPLOY_REPOSITORY == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

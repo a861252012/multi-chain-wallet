@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/wallet"
-	"github.com/a861252012/testnet-wallet-lab/internal/web"
+	"github.com/a861252012/multi-chain-wallet/internal/wallet"
+	"github.com/a861252012/multi-chain-wallet/internal/web"
 )
 
 func TestE2EChainKeyLifecycle(t *testing.T) {

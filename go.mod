@@ -1,4 +1,4 @@
-module github.com/a861252012/testnet-wallet-lab
+module github.com/a861252012/multi-chain-wallet
 
 go 1.26.1
 

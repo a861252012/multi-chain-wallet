@@ -12,7 +12,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/wallet"
+	"github.com/a861252012/multi-chain-wallet/internal/wallet"
 	sol "github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/programs/system"
 )

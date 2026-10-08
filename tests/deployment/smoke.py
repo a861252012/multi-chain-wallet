@@ -116,7 +116,7 @@ try:
         prefix = "/"+family+"/api/"
         body = json.dumps({"password": wallet_password})
         assert checks.request(port, prefix+"create", "POST", shared_headers, body)[0] == 401
-        operator = {**shared_headers, "Authorization": "Basic "+base64.b64encode(("flowledger:"+access_token).encode()).decode()}
+        operator = {**shared_headers, "Authorization": "Basic "+base64.b64encode(("multi-chain-wallet:"+access_token).encode()).decode()}
         assert checks.request(port, prefix+"create", "POST", operator, body)[0] == 200
         status, _, data = checks.request(port, prefix+"status", headers=shared_headers)
         assert status == 200 and json.loads(data)["exists"]

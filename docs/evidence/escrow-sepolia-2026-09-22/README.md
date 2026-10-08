@@ -8,7 +8,7 @@
 - 合約：[`0xE806A516cb5AA93Dde3124eab3ebFf49c0605078`](https://sepolia.etherscan.io/address/0xE806A516cb5AA93Dde3124eab3ebFf49c0605078)。
 - 代幣：Circle 測試 USDC，`0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238`，6 位小數。
 - 合約來源 commit：`456312f963462f2f438b288e5d3899c3d860ee65`；線上操作版本：`ede6d8f6ba59c968fdd847706a3c88edcb050616`。兩版合約來源相同。
-- [CI 及公開站檢查](https://github.com/a861252012/testnet-wallet-lab/actions/runs/35638920421) 通過。該操作版本映像 digest：`sha256:666367bb86b58d0907a8ec6536bd252496a30532d183c363078de5234ea1f382`。
+- [CI 及公開站檢查](https://github.com/a861252012/multi-chain-wallet/actions/runs/35638920421) 通過。該操作版本映像 digest：`sha256:666367bb86b58d0907a8ec6536bd252496a30532d183c363078de5234ea1f382`。
 - [Sourcify 原始碼驗證](https://repo.sourcify.dev/11155111/0xE806A516cb5AA93Dde3124eab3ebFf49c0605078)：creation、runtime 均為 `exact_match`。另以本機重新編譯結果比對鏈上 runtime，包含 immutable USDC 地址。
 
 Sourcify 向 Etherscan 的同步驗證遇到每日配額上限；這份紀錄不宣稱 Etherscan 已驗證原始碼。

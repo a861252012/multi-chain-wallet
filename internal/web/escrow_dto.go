@@ -1,6 +1,6 @@
 package web
 
-import "github.com/a861252012/testnet-wallet-lab/internal/wallet"
+import "github.com/a861252012/multi-chain-wallet/internal/wallet"
 
 type evmEscrowInfo struct {
 	Enabled   bool   `json:"enabled"`

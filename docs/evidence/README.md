@@ -10,7 +10,7 @@ The records below distinguish local fault-recovery tests from transactions obser
 | 2026-09-19 | ETHVault deployment, source verification, a 0.0001 test ETH deposit and full withdrawal, with receipts and balance checks. | [Vault verification](vault-sepolia-2026-09-19/REPORT.md) |
 | 2026-09-22 | PaymentEscrow: 5 test USDC funded and refunded; 3.25 test USDC funded and released. Includes contract events and payer, recipient and escrow balances. | [Payment verification](escrow-sepolia-2026-09-22/README.md) |
 
-The contract records document Sourcify verification. They do not claim that Etherscan-specific source verification was completed. Original reports, receipts, screenshots and checksum manifests remain in their dated directories.
+The contract records document Sourcify verification. They do not claim that Etherscan-specific source verification was completed. The [archive index](archive.json) links the original release/vault reports, receipts, logs, screenshots and checksum manifests at an immutable Git revision, with SHA-256 for each file. Current summaries use the present project name; original evidence retains its recorded bytes and historical UI. A naming update is not a new chain acceptance run.
 
 ## Reproduce local behavior
 

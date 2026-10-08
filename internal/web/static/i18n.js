@@ -83,7 +83,7 @@
       if (!['zh-TW','en','zh-CN'].includes(next)) return;
       locale = next;
       document.documentElement.lang = locale;
-      try { localStorage.setItem('flowledger:locale',locale); } catch { /* Session-only preference. */ }
+      try { localStorage.setItem('multi-chain-wallet:locale',locale); } catch { /* Session-only preference. */ }
       refresh();
       window.dispatchEvent(new Event('localechange'));
     },

@@ -13,8 +13,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/chain"
-	"github.com/a861252012/testnet-wallet-lab/internal/wallet"
+	"github.com/a861252012/multi-chain-wallet/internal/chain"
+	"github.com/a861252012/multi-chain-wallet/internal/wallet"
 )
 
 func TestRoutesAndInputErrors(t *testing.T) {
@@ -32,7 +32,7 @@ func TestRoutesAndInputErrors(t *testing.T) {
 		method, path, contains string
 		status                 int
 	}{
-		{"GET", "/", "FlowLedger", 200}, {"GET", "/static/app.css", ":root", 200},
+		{"GET", "/", "Multi-Chain Wallet", 200}, {"GET", "/static/app.css", ":root", 200},
 		{"GET", "/static/app.js", "refreshNetwork", 200}, {"GET", "/healthz", "wallet", 200},
 		{"GET", "/api/balance?address=invalid", "地址格式", 400},
 		{"GET", "/api/transactions/bad", "交易雜湊格式", 400},
@@ -275,7 +275,7 @@ func TestActivityRoutesStayLocalAndExportExactCSV(t *testing.T) {
 	}
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, httptest.NewRequest("GET", "http://localhost:8090/api/wallet/activity?format=csv", nil))
-	if response.Code != 200 || !strings.HasPrefix(response.Header().Get("Content-Type"), "text/csv") || !strings.Contains(response.Header().Get("Content-Disposition"), "flowledger-sepolia-activity.csv") || !strings.Contains(response.Body.String(), "amount_raw") || strings.Contains(response.Body.String(), "fixture-password") {
+	if response.Code != 200 || !strings.HasPrefix(response.Header().Get("Content-Type"), "text/csv") || !strings.Contains(response.Header().Get("Content-Disposition"), "multi-chain-wallet-sepolia-activity.csv") || !strings.Contains(response.Body.String(), "amount_raw") || strings.Contains(response.Body.String(), "fixture-password") {
 		t.Fatalf("bad CSV: %d %s headers=%v", response.Code, response.Body.String(), response.Header())
 	}
 	response = httptest.NewRecorder()

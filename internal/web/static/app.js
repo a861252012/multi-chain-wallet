@@ -210,4 +210,4 @@ $('network-select').addEventListener('change', () => { location.href = (['/solan
 for (const element of document.querySelectorAll('[data-network-name]')) element.textContent = networkName;
 
 document.querySelector('.brand').href = networkPrefix + '/';
-document.title = `FlowLedger · ${networkName} 錢包`;
+document.title = `Multi-Chain Wallet · ${networkName} 錢包`;

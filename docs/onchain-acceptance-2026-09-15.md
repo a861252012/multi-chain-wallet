@@ -1,6 +1,6 @@
 # 真實測試鏈發送驗收 — 2026-09-15
 
-這次完成 13 筆成功交易，涵蓋五個測試網。以下每筆均由 FlowLedger 的報價、簽署及送出 API 執行，並另外透過公開 RPC 重新查核。這不代表所有網路、所有功能均完成端到端驗收。
+這次完成 13 筆成功交易，涵蓋五個測試網。以下每筆均由 Multi-Chain Wallet 的報價、簽署及送出 API 執行，並另外透過公開 RPC 重新查核。這不代表所有網路、所有功能均完成端到端驗收。
 
 ## 成功交易
 
@@ -37,9 +37,9 @@ TRON 節點拒絕原生 TRX 自轉帳。現於報價前回報清楚錯誤，並�
 ```sh
 docker run --rm --network none \
   -v "$PWD:/app:ro" \
-  -v flowledger_go_modules:/go/pkg/mod:ro \
-  -v /private/tmp/flowledger-development-cache:/tmp/review-cache \
-  -e GOCACHE=/tmp/review-cache flowledger-app \
+  -v multi-chain-wallet_go_modules:/go/pkg/mod:ro \
+  -v /private/tmp/multi-chain-wallet-development-cache:/tmp/review-cache \
+  -e GOCACHE=/tmp/review-cache multi-chain-wallet-app \
   sh -c 'go test -race -count=1 ./... && go vet ./...'
 go test ./cmd/send-and-verify ./cmd/verify-onchain-evidence
 go run ./cmd/verify-onchain-evidence
@@ -48,10 +48,10 @@ go run ./cmd/verify-onchain-evidence
 Go 執行結果（Exit 0）：
 
 ```text
-?    github.com/a861252012/flowledger/cmd/flowledger [no test files]
-ok   github.com/a861252012/flowledger/internal/chain 1.148s
-ok   github.com/a861252012/flowledger/internal/wallet 6.118s
-ok   github.com/a861252012/flowledger/internal/web 1.071s
+?    github.com/a861252012/multi-chain-wallet/cmd/multi-chain-wallet [no test files]
+ok   github.com/a861252012/multi-chain-wallet/internal/chain 1.148s
+ok   github.com/a861252012/multi-chain-wallet/internal/wallet 6.118s
+ok   github.com/a861252012/multi-chain-wallet/internal/web 1.071s
 ```
 
 Go 容器使用唯讀原始碼、無網路及獨立測試 cache，未掛載執行中錢包資料。Race Detector 僅針對執行到的記憶體存取，不證明不存在邏輯競態。

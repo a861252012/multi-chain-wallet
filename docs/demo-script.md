@@ -17,9 +17,9 @@ To rerun the recovery checks, run from the repository root:
 ```sh
 docker run --rm --network none \
   -v "$PWD:/app:ro" \
-  -v flowledger_go_modules:/go/pkg/mod:ro \
+  -v multi-chain-wallet_go_modules:/go/pkg/mod:ro \
   -e GOCACHE=/tmp/review-cache \
-  flowledger-app go test -race -count=1 -v ./internal/wallet \
+  multi-chain-wallet-app go test -race -count=1 -v ./internal/wallet \
   -run '^(TestProcessKillRestartReusesRaw|TestConcurrentSendSignsExactQuoteOnce|TestUnknownBroadcastRestartReusesRaw|TestSendConcurrentStateUpdatePreservesLatest.*|TestRetryConcurrentStateUpdatePreservesLatest.*|TestHistoryUpdatesReorgDetectedFromRPC)$'
 ```
 

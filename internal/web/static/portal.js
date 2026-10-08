@@ -15,7 +15,7 @@
   theme.addEventListener('click', () => {
     const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = next;
-    try { localStorage.setItem('flowledger:theme', next); } catch { /* Session-only preference. */ }
+    try { localStorage.setItem('multi-chain-wallet:theme', next); } catch { /* Session-only preference. */ }
     themeLabel();
   });
   window.addEventListener('localechange', themeLabel);

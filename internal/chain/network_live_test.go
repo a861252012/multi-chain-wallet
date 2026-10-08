@@ -12,7 +12,7 @@ import (
 )
 
 func TestAdditionalNetworksReadOnly(t *testing.T) {
-	if os.Getenv("FLOWLEDGER_LIVE_NETWORKS") != "1" {
+	if os.Getenv("MULTI_CHAIN_WALLET_LIVE_NETWORKS") != "1" {
 		t.Skip("opt-in read-only network verification")
 	}
 	for _, network := range []struct {

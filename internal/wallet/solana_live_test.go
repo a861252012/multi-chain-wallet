@@ -13,7 +13,7 @@ import (
 
 // Explicit opt-in only. Uses a disposable Devnet-only wallet, never the runtime wallet volume.
 func TestSolanaDevnetSendAcceptance(t *testing.T) {
-	if os.Getenv("FLOWLEDGER_SOLANA_LIVE_SEND") != "1" {
+	if os.Getenv("MULTI_CHAIN_WALLET_SOLANA_LIVE_SEND") != "1" {
 		t.Skip("requires explicit Devnet faucet/send opt-in")
 	}
 	s, err := NewSolanaService("https://api.devnet.solana.com", t.TempDir(), 262144)

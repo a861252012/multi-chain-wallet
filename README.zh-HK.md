@@ -1,10 +1,10 @@
-# Testnet Wallet Lab
+# Multi-Chain Wallet
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [正體中文（台灣）](README.zh-TW.md) · [繁體中文（香港）](README.zh-HK.md)
 
 **[線上 Demo（僅供測試鏈使用）](https://wallet.tedlin.fyi/)**
 
-這是用 Go 編寫的 EVM、Solana 及 TRON 測試網錢包。重點是交易結果不明時怎樣處理：先儲存簽署內容再廣播、用 quote ID 避免重複簽署，重啟後繼續查收據。
+這是用 Go 開發的多鏈錢包，支援 EVM、Solana 及 TRON。Demo 使用測試網。重點是交易結果不明時怎樣處理：先儲存簽署內容再廣播、用 quote ID 避免重複簽署，重啟後繼續查收據。
 
 ![錢包介面，使用本機測試資料](docs/images/wallet-overview.png)
 

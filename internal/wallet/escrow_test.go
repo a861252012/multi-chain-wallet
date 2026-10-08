@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/chain"
+	"github.com/a861252012/multi-chain-wallet/internal/chain"
 )
 
 func TestEscrowConfigurationAndAccountInheritance(t *testing.T) {

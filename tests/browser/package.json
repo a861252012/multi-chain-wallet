@@ -1,1 +1,1 @@
-{"name":"flowledger-browser-tests","private":true,"scripts":{"test":"node browser.cjs","test:e2e":"node e2e.cjs","test:live":"node live.cjs"},"devDependencies":{"playwright":"1.58.2"}}
+{"name":"multi-chain-wallet-browser-tests","private":true,"scripts":{"test":"node browser.cjs","test:e2e":"node e2e.cjs","test:live":"node live.cjs"},"devDependencies":{"playwright":"1.58.2"}}

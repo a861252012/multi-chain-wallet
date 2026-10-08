@@ -60,7 +60,7 @@ func (t *fallbackTransport) probeEndpoint(req *http.Request, endpoint *url.URL) 
 	probe.URL = endpoint
 	probe.Host = endpoint.Host
 	probe.Header.Del("Authorization")
-	probe.Header.Set("X-Flowledger-Probe", "1")
+	probe.Header.Set("X-Multi-Chain-Wallet-Probe", "1")
 	if endpoint.User != nil {
 		password, _ := endpoint.User.Password()
 		probe.SetBasicAuth(endpoint.User.Username(), password)

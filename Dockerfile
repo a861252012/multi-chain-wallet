@@ -5,4 +5,4 @@ WORKDIR /app
 ENV GOCACHE=/go/build-cache
 COPY go.mod go.sum ./
 RUN go mod download
-CMD ["go", "run", "./cmd/testnet-wallet-lab"]
+CMD ["go", "run", "./cmd/multi-chain-wallet"]

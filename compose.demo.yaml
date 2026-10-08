@@ -1,4 +1,4 @@
-name: testnet-wallet-demo
+name: multi-chain-wallet-demo
 services:
   app:
     image: ${APP_IMAGE:?Set immutable APP_IMAGE digest}

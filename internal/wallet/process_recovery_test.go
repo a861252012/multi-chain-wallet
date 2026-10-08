@@ -20,7 +20,7 @@ import (
 // Kill the signing process after the mock receives the bytes but before it replies.
 // No shutdown handlers run; only the parent's temporary directory survives.
 func TestProcessKillRestartReusesRaw(t *testing.T) {
-	if dir := os.Getenv("FLOWLEDGER_RECOVERY_CHILD_DIR"); dir != "" {
+	if dir := os.Getenv("MULTI_CHAIN_WALLET_RECOVERY_CHILD_DIR"); dir != "" {
 		client := mockRPC(t, func(method string, params json.RawMessage) any {
 			switch method {
 			case "eth_chainId":
@@ -65,7 +65,7 @@ func TestProcessKillRestartReusesRaw(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	child := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestProcessKillRestartReusesRaw$", "-test.count=1")
-	child.Env = append(os.Environ(), "FLOWLEDGER_RECOVERY_CHILD_DIR="+dir, "TMPDIR="+dir)
+	child.Env = append(os.Environ(), "MULTI_CHAIN_WALLET_RECOVERY_CHILD_DIR="+dir, "TMPDIR="+dir)
 	output, err := child.CombinedOutput()
 	exitErr, killed := errors.AsType[*exec.ExitError](err)
 	if ctx.Err() != nil || !killed {

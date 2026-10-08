@@ -143,14 +143,36 @@ const server = http.createServer(async (req,res)=>{
  const page=await context.newPage(), errors=[];page.on('pageerror',error=>errors.push(String(error)));
  async function view(id){await page.evaluate(id=>{location.hash=id;},id);await page.waitForFunction(id=>document.body.dataset.view===id,id);}
  try {
-  const screenshotRoot = process.env.FLOWLEDGER_UI_SCREENSHOTS || os.tmpdir();
+  const screenshotRoot = process.env.MULTI_CHAIN_WALLET_UI_SCREENSHOTS || os.tmpdir();
   await fs.mkdir(screenshotRoot,{recursive:true});
-  const screenshots = await fs.mkdtemp(path.join(screenshotRoot,'flowledger-browser-'));
+  const screenshots = await fs.mkdtemp(path.join(screenshotRoot,'multi-chain-wallet-browser-'));
   console.log('Browser screenshots: '+screenshots);
   const publicRequests = [];
   const trackPublic = req => publicRequests.push(new URL(req.url()).pathname);
   page.on('request', trackPublic);
   await page.goto(base+'/public-demo');
+  await page.evaluate(() => {
+    const prefix = String.fromCharCode(102,108,111,119,108,101,100,103,101,114)+':';
+    localStorage.setItem(prefix+'contacts:evm', JSON.stringify([{address:'0x1111111111111111111111111111111111111111',label:'Saved recipient'}]));
+    localStorage.setItem(prefix+'theme', 'dark');
+    sessionStorage.setItem(prefix+'exchange-flow:/migration-fixture', JSON.stringify({id:'saved-flow',pending:{quoteID:'saved-quote',hash:'0x123'}}));
+  });
+  await page.reload();
+  const migrated = await page.evaluate(() => ({
+    contacts: JSON.parse(localStorage.getItem('multi-chain-wallet:contacts:evm')),
+    flow: JSON.parse(sessionStorage.getItem('multi-chain-wallet:exchange-flow:/migration-fixture')),
+    theme: document.documentElement.dataset.theme,
+  }));
+  assert.equal(migrated.contacts[0].label, 'Saved recipient');
+  assert.equal(migrated.flow.pending.quoteID, 'saved-quote');
+  assert.equal(migrated.theme, 'dark');
+  assert.match(await page.title(), /Multi-Chain Wallet/);
+  await page.evaluate(() => {
+    localStorage.removeItem('multi-chain-wallet:contacts:evm');
+    sessionStorage.removeItem('multi-chain-wallet:exchange-flow:/migration-fixture');
+    localStorage.removeItem('multi-chain-wallet:theme');
+  });
+  console.log('PASS: browser namespace migration preserves contacts, preferences and pending quote IDs.');
   assert.equal(await page.locator('a[href="/login"]').count(),1);
   await page.locator('#wallet-dashboard').waitFor({state:'visible'});
   assert.equal(await page.locator('#manage-accounts').isDisabled(),true);
@@ -184,6 +206,14 @@ const server = http.createServer(async (req,res)=>{
   assert.equal(await page.locator('#vault-deposit').getAttribute('type'),'radio');
   assert.equal(await page.locator('#vault-withdraw').getAttribute('type'),'radio');
   assert.equal(await page.locator('input[name="vault-action"]:checked').inputValue(),'vault_deposit');
+  if (process.env.MULTI_CHAIN_WALLET_UI_SCREENSHOTS) {
+    await page.locator('#language-select').selectOption('en');
+    if (await page.evaluate(() => document.documentElement.dataset.theme === 'dark')) await page.locator('#theme-toggle').click();
+    await view('overview');
+    await page.screenshot({path:path.join(screenshots,'wallet-overview.png'),fullPage:true,animations:'disabled'});
+    await page.locator('#language-select').selectOption('zh-TW');
+    await view('vault-panel');
+  }
   const quotesBeforeSelection=quotes.size;
   await page.locator('#vault-deposit').focus();
   await page.keyboard.press('ArrowRight');
@@ -404,7 +434,7 @@ const server = http.createServer(async (req,res)=>{
   await page.waitForFunction(()=>document.querySelectorAll('#account-select option').length===2);
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.evaluate(()=>document.querySelector('#account-manager').getBoundingClientRect().width<=innerWidth));
-  await page.screenshot({path:path.join(screenshots,'flowledger-wallet-manager-mobile.png')});
+  await page.screenshot({path:path.join(screenshots,'multi-chain-wallet-wallet-manager-mobile.png')});
   await page.keyboard.press('Escape');assert.equal(await page.locator('#account-manager').isVisible(),false);
   await page.setViewportSize({width:1280,height:900});
   assert.equal(await page.locator('#token-form, #token-contract').count(),0);
@@ -412,7 +442,7 @@ const server = http.createServer(async (req,res)=>{
   assert.ok(await page.locator('#token-list .token-balance').count()>0);
   assert.ok(await page.locator('#token-list a[href*="/token/"]').count()>0);
   // Previously saved tokens remain available after removing the custom-token entry point.
-  await page.evaluate(token=>localStorage.setItem('flowledger:tokens:',JSON.stringify([token])),customToken);
+  await page.evaluate(token=>localStorage.setItem('multi-chain-wallet:tokens:',JSON.stringify([token])),customToken);
   await page.locator('#refresh-wallet').click();
   await page.waitForFunction(token=>[...document.querySelector('#send-asset').options].some(option=>option.value===token),customToken);
   await view('send-panel');await page.locator('#send-asset').selectOption(customToken);assert.equal(await page.locator('#send-amount-label').textContent(),'最小單位數量（整數）');await page.locator('#send-to').fill(address);await page.locator('#send-amount').fill('123');await page.locator('#send-form button[type=submit]').click();await page.locator('#send-confirmation').waitFor({state:'visible'});assert.equal([...quotes.values()].at(-1).amountRaw,'123');assert.equal([...quotes.values()].at(-1).amount,'');await page.locator('#cancel-send').click();
@@ -476,19 +506,19 @@ const server = http.createServer(async (req,res)=>{
     history = [{...original,state:'pending',replacedBy:undefined}];
     transactionStatuses.set(originalHash,{hash:originalHash,state:'pending'});
     transactionStatuses.set(replacementHash,{hash:replacementHash,state:'succeeded'});
-    await page.evaluate(({originalHash})=>sessionStorage.setItem('flowledger:exchange-flow:',JSON.stringify({id:'replacement-flow',direction:'eth-usdc',amount:'0.000001',phase:'wrap',pending:{quoteID:'replacement-original',hash:originalHash,kind:'wrap'}})),{originalHash});
+    await page.evaluate(({originalHash})=>sessionStorage.setItem('multi-chain-wallet:exchange-flow:',JSON.stringify({id:'replacement-flow',direction:'eth-usdc',amount:'0.000001',phase:'wrap',pending:{quoteID:'replacement-original',hash:originalHash,kind:'wrap'}})),{originalHash});
     await page.reload();
     await page.waitForFunction(()=>!document.querySelector('#wallet-dashboard').hidden&&!document.querySelector('#refresh-wallet').disabled);
     history = [original,replacement];
     await view('exchange-panel');
     await page.locator('#exchange-submit').click();
     await page.waitForFunction(()=>!document.querySelector('#exchange-submit').disabled);
-    const current = await page.evaluate(()=>JSON.parse(sessionStorage.getItem('flowledger:exchange-flow:')));
+    const current = await page.evaluate(()=>JSON.parse(sessionStorage.getItem('multi-chain-wallet:exchange-flow:')));
     assert.equal(current.phase,action==='speedup'?'swap':'wrap',action+' follows only the original intent');
     assert.equal(Boolean(current.pending),action==='unrelated',action+' preserves uncertainty');
   }
   transactionStatuses.clear(); history=[];
-  await page.evaluate(()=>{sessionStorage.removeItem('flowledger:exchange-flow:');localStorage.removeItem('flowledger:tokens:');});
+  await page.evaluate(()=>{sessionStorage.removeItem('multi-chain-wallet:exchange-flow:');localStorage.removeItem('multi-chain-wallet:tokens:');});
   scanTokens = Array.from({length:20},(_,i)=>'0x6'+String(i+1).padStart(39,'0'));
   await page.reload();
   await page.waitForFunction(()=>document.querySelectorAll('#send-asset option').length>=23);
@@ -671,7 +701,7 @@ const server = http.createServer(async (req,res)=>{
             const assets=await page.locator('#tokens-panel').boundingBox(),activity=await page.locator('#history-panel').boundingBox();
             assert.ok(Math.abs(assets.y-activity.y)<2 && assets.x<activity.x,'desktop overview groups assets beside history');
           }
-          if (process.env.FLOWLEDGER_UI_SCREENSHOTS && locale==='en' && [375,1440].includes(width)) {
+          if (process.env.MULTI_CHAIN_WALLET_UI_SCREENSHOTS && locale==='en' && [375,1440].includes(width)) {
             await page.screenshot({path:path.join(screenshots,`${family.replace('/','')||'evm'}-${width}-${mode}.png`),fullPage:true,animations:'disabled'});
           }
         }

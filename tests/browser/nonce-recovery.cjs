@@ -29,7 +29,7 @@ module.exports = async function nonceRecovery(context, base) {
     for (const name of ['重新廣播原交易','加速交易','取消交易']) assert.equal(await row.getByRole('button',{name,exact:true}).count(),0);
     await row.locator('details > summary').click();
     assert.equal(await row.getByRole('button',{name:'交易詳情',exact:true}).count(),1);
-    await page.evaluate(tx=>sessionStorage.setItem('flowledger:exchange-flow:',JSON.stringify({
+    await page.evaluate(tx=>sessionStorage.setItem('multi-chain-wallet:exchange-flow:',JSON.stringify({
       id:'nonce-flow',direction:'eth-usdc',amount:'0.001',phase:'wrap',pending:{hash:tx.hash,quoteID:tx.quoteId,kind:'wrap'},
     })),tx);
     await page.reload();
@@ -38,7 +38,7 @@ module.exports = async function nonceRecovery(context, base) {
     await page.locator('#exchange-submit').click();
     await page.waitForFunction(()=>!document.querySelector('#exchange-submit').disabled);
     assert.equal(await page.locator('#exchange-workflow').textContent(),full);
-    const flow = await page.evaluate(()=>JSON.parse(sessionStorage.getItem('flowledger:exchange-flow:')));
+    const flow = await page.evaluate(()=>JSON.parse(sessionStorage.getItem('multi-chain-wallet:exchange-flow:')));
     assert.equal(flow.pending.hash,tx.hash); assert.equal(flow.phase,'wrap');
     assert.equal(writes,0,'nonce recovery must not retry or advance the payment');
     allowed=false;

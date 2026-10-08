@@ -100,7 +100,7 @@ func TestAnonymousRequestsCannotConsumeAuthenticatedAPIBudget(t *testing.T) {
 		}
 	}
 	r := httptest.NewRequest("GET", "http://wallet.example/api/wallet", nil)
-	r.SetBasicAuth("flowledger", token)
+	r.SetBasicAuth("multi-chain-wallet", token)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	if w.Code != 204 {
@@ -113,7 +113,7 @@ func TestValidBasicAuthSurvivesFailedLoginBudget(t *testing.T) {
 	h := RequireAccessToken(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(204) }), token)
 	for i := range 11 {
 		r := httptest.NewRequest("GET", "http://localhost/api/wallet", nil)
-		r.SetBasicAuth("flowledger", "wrong")
+		r.SetBasicAuth("multi-chain-wallet", "wrong")
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
 		want := 401
@@ -126,7 +126,7 @@ func TestValidBasicAuthSurvivesFailedLoginBudget(t *testing.T) {
 	}
 	for range 11 {
 		r := httptest.NewRequest("GET", "http://localhost/api/wallet", nil)
-		r.SetBasicAuth("flowledger", token)
+		r.SetBasicAuth("multi-chain-wallet", token)
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
 		if w.Code != 204 {

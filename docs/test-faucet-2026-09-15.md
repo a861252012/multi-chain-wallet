@@ -46,9 +46,9 @@ Shasta 發放帳戶先由既有測試錢包轉入 20 TRX，資金補充交易為
 ```sh
 docker run --rm --network none \
   -v "$PWD:/app:ro" \
-  -v flowledger_go_modules:/go/pkg/mod:ro \
-  -v /private/tmp/flowledger-development-cache:/tmp/review-cache \
-  -e GOCACHE=/tmp/review-cache flowledger-app \
+  -v multi-chain-wallet_go_modules:/go/pkg/mod:ro \
+  -v /private/tmp/multi-chain-wallet-development-cache:/tmp/review-cache \
+  -e GOCACHE=/tmp/review-cache multi-chain-wallet-app \
   sh -c 'go test -race -count=1 ./... && go vet ./...'
 ```
 
@@ -59,10 +59,10 @@ docker run --rm --network none \
 最終 Go 測試與靜態分析 Exit Code 0：
 
 ```text
-?   github.com/a861252012/flowledger/cmd/flowledger [no test files]
-ok  github.com/a861252012/flowledger/internal/chain 1.111s
-ok  github.com/a861252012/flowledger/internal/wallet 7.028s
-ok  github.com/a861252012/flowledger/internal/web 1.075s
+?   github.com/a861252012/multi-chain-wallet/cmd/multi-chain-wallet [no test files]
+ok  github.com/a861252012/multi-chain-wallet/internal/chain 1.111s
+ok  github.com/a861252012/multi-chain-wallet/internal/wallet 7.028s
+ok  github.com/a861252012/multi-chain-wallet/internal/web 1.075s
 ```
 
 瀏覽器 mock 回歸也已通過領幣成功、SOL 未取得空投、TRON 庫存不足及既有錢包流程。Go Race Detector 結果僅涵蓋已執行的測試路徑，不代表沒有所有業務競態。

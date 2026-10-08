@@ -265,7 +265,7 @@
       );
       const link = text('a', '');
       link.href = url;
-      link.download = 'flowledger-solana-devnet-' + state.address + '.json';
+      link.download = 'multi-chain-wallet-solana-devnet-' + state.address + '.json';
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (err) {

@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id);
   const family = document.body.dataset.walletFamily;
   const chain = family === 'evm' ? networkID : family;
-  const key = 'flowledger:contacts:' + chain;
+  const key = 'multi-chain-wallet:contacts:' + chain;
   const recipient = $(family === 'evm' ? 'send-to' : family === 'solana' ? 'sol-to' : 'tron-to');
   const valid = value => family === 'evm'
     ? /^0x[0-9a-fA-F]{40}$/.test(value) && !/^0x0{40}$/i.test(value)
@@ -56,7 +56,7 @@
     if (!$('contacts-list').children.length) $('contacts-list').append(element('p','尚無符合的常用地址。'));
     window.dispatchEvent(new Event('contacts-updated'));
   }
-  window.flowledgerAddressLabel = value => contacts.find(c => normalize(c.address) === normalize(value || ''))?.label || '';
+  window.walletAddressLabel = value => contacts.find(c => normalize(c.address) === normalize(value || ''))?.label || '';
   $('contact-form').addEventListener('submit', event => {
     event.preventDefault();
     try {

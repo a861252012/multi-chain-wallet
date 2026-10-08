@@ -12,7 +12,7 @@ import (
 )
 
 func TestSepoliaActivityReadOnly(t *testing.T) {
-	endpoint := os.Getenv("FLOWLEDGER_LIVE_RPC")
+	endpoint := os.Getenv("MULTI_CHAIN_WALLET_LIVE_RPC")
 	if endpoint == "" {
 		t.Skip("opt-in read-only Sepolia check")
 	}

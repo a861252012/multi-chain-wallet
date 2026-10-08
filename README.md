@@ -1,10 +1,10 @@
-# Testnet Wallet Lab
+# Multi-Chain Wallet
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [正體中文（台灣）](README.zh-TW.md) · [繁體中文（香港）](README.zh-HK.md)
 
 **[Live demo (testnets only)](https://wallet.tedlin.fyi/)**
 
-A Go testnet wallet for EVM, Solana and TRON. The main problem explored here is uncertain broadcasts: save signed bytes before sending, deduplicate retries by quote ID, and resume receipt checks after a restart.
+A multi-chain wallet built with Go for EVM, Solana and TRON. The demo runs on test networks. The main problem explored here is uncertain broadcasts: save signed bytes before sending, deduplicate retries by quote ID, and resume receipt checks after a restart.
 
 ![Wallet interface with local test data](docs/images/wallet-overview.png)
 

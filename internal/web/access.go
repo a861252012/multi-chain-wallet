@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var accessPage = template.Must(template.New("access").Parse(`<!doctype html><html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>開啟 Testnet Wallet Lab</title></head><body><main><h1>開啟 Testnet Wallet Lab</h1><p>輸入管理者提供的存取憑證（WALLET_ACCESS_TOKEN）。這不是錢包密碼或助記詞。</p>{{if .}}<p role="alert">{{.}}</p>{{end}}<form method="post" action="/login"><label for="token">存取憑證</label><input id="token" name="token" type="password" autocomplete="current-password" required autofocus><button type="submit">開啟錢包</button></form><p>同一個瀏覽器工作階段只需登入一次。</p></main></body></html>`))
+var accessPage = template.Must(template.New("access").Parse(`<!doctype html><html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>開啟 Multi-Chain Wallet</title></head><body><main><h1>開啟 Multi-Chain Wallet</h1><p>輸入管理者提供的存取憑證（WALLET_ACCESS_TOKEN）。這不是錢包密碼或助記詞。</p>{{if .}}<p role="alert">{{.}}</p>{{end}}<form method="post" action="/login"><label for="token">存取憑證</label><input id="token" name="token" type="password" autocomplete="current-password" required autofocus><button type="submit">開啟錢包</button></form><p>同一個瀏覽器工作階段只需登入一次。</p></main></body></html>`))
 
 // RequireAccessToken accepts explicit Basic credentials for CLI clients and an
 // HttpOnly session cookie for browsers. It never issues a browser auth challenge.
@@ -38,7 +38,7 @@ func RequireAccessToken(next http.Handler, token string) http.Handler {
 			return
 		}
 		username, password, ok := r.BasicAuth()
-		authenticated := ok && subtle.ConstantTimeCompare([]byte(username), []byte("flowledger")) == 1 && subtle.ConstantTimeCompare([]byte(password), []byte(token)) == 1
+		authenticated := ok && subtle.ConstantTimeCompare([]byte(username), []byte("multi-chain-wallet")) == 1 && subtle.ConstantTimeCompare([]byte(password), []byte(token)) == 1
 		// Bound login work globally without trusting spoofable IP headers.
 		if (r.URL.Path == "/login" && r.Method == http.MethodPost) || (r.Header.Get("Authorization") != "" && !authenticated) {
 			loginMu.Lock()
@@ -72,11 +72,11 @@ func RequireAccessToken(next http.Handler, token string) http.Handler {
 				_ = accessPage.Execute(w, "存取憑證不正確，請重試。")
 				return
 			}
-			http.SetCookie(w, &http.Cookie{Name: "flowledger_session", Value: session, Path: "/", HttpOnly: true, Secure: strings.HasPrefix(requestOrigin(r), "https://"), SameSite: http.SameSiteStrictMode})
+			http.SetCookie(w, &http.Cookie{Name: "multi-chain-wallet_session", Value: session, Path: "/", HttpOnly: true, Secure: strings.HasPrefix(requestOrigin(r), "https://"), SameSite: http.SameSiteStrictMode})
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
-		if cookie, err := r.Cookie("flowledger_session"); err == nil && subtle.ConstantTimeCompare([]byte(cookie.Value), []byte(session)) == 1 {
+		if cookie, err := r.Cookie("multi-chain-wallet_session"); err == nil && subtle.ConstantTimeCompare([]byte(cookie.Value), []byte(session)) == 1 {
 			authenticated = true
 		}
 		if authenticated {

@@ -80,7 +80,7 @@ func TestFallbackFastPathNoRedundantProbe(t *testing.T) {
 			Method string `json:"method"`
 		}
 		json.NewDecoder(r.Body).Decode(&req)
-		if r.Header.Get("X-Flowledger-Probe") == "1" {
+		if r.Header.Get("X-Multi-Chain-Wallet-Probe") == "1" {
 			primaryProbes.Add(1)
 			json.NewEncoder(w).Encode(map[string]any{"jsonrpc": "2.0", "id": req.ID, "result": "0xaa36a7"})
 			return
@@ -106,7 +106,7 @@ func TestFallbackFastPathNoRedundantProbe(t *testing.T) {
 			Method string `json:"method"`
 		}
 		json.NewDecoder(r.Body).Decode(&req)
-		if r.Header.Get("X-Flowledger-Probe") == "1" {
+		if r.Header.Get("X-Multi-Chain-Wallet-Probe") == "1" {
 			backupProbes.Add(1)
 			json.NewEncoder(w).Encode(map[string]any{"jsonrpc": "2.0", "id": req.ID, "result": "0xaa36a7"})
 			return
@@ -245,7 +245,7 @@ func TestFallbackCallerContextCancellationKeepsHealthy(t *testing.T) {
 			Method string `json:"method"`
 		}
 		json.NewDecoder(r.Body).Decode(&req)
-		if r.Header.Get("X-Flowledger-Probe") == "1" || req.Method == "eth_chainId" {
+		if r.Header.Get("X-Multi-Chain-Wallet-Probe") == "1" || req.Method == "eth_chainId" {
 			probes.Add(1)
 			json.NewEncoder(w).Encode(map[string]any{"jsonrpc": "2.0", "id": req.ID, "result": "0xaa36a7"})
 			return

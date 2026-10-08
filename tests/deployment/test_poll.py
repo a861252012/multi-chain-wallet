@@ -7,7 +7,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 SHA = 'a' * 40
-REF = 'ghcr.io/a861252012/testnet-wallet-lab@sha256:' + 'b' * 64
+REF = 'ghcr.io/a861252012/multi-chain-wallet@sha256:' + 'b' * 64
 
 class PollTests(unittest.TestCase):
     def setUp(self):
@@ -18,7 +18,7 @@ class PollTests(unittest.TestCase):
         self.bin.mkdir()
         self.env = {**os.environ, 'FIXTURE': str(self.base), 'HEAD': SHA, 'REF': REF}
         source = (ROOT / 'scripts/deploy/poll.sh').read_text()
-        source = source.replace('readonly base=/opt/testnet-wallet-lab', 'readonly base=' + shlex.quote(str(self.base)))
+        source = source.replace('readonly base=/opt/multi-chain-wallet', 'readonly base=' + shlex.quote(str(self.base)))
         source = source.replace('export PATH=/usr/sbin:/usr/bin:/sbin:/bin', 'export PATH=' + shlex.quote(str(self.bin) + os.pathsep + os.environ['PATH']))
         source = source.replace('/usr/local/sbin/wallet-deploy', shlex.quote(str(self.bin / 'deploy')))
         self.script = self.base / 'poll.sh'

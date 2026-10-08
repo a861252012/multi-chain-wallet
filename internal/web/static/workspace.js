@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const watchesKey = 'flowledger:watches:' + networkID;
+  const watchesKey = 'multi-chain-wallet:watches:' + networkID;
   function stored(name) {
     try { const value = JSON.parse(localStorage.getItem(name) || '[]'); return Array.isArray(value) ? value.filter(item => item && /^0x[0-9a-fA-F]{40}$/.test(item.address) && typeof item.label === 'string').slice(0,100) : []; }
     catch { return []; }

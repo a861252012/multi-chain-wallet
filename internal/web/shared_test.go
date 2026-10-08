@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/a861252012/testnet-wallet-lab/internal/wallet"
+	"github.com/a861252012/multi-chain-wallet/internal/wallet"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -83,7 +83,7 @@ func TestSharedChainWallets(t *testing.T) {
 				req.Header.Set("Content-Type", "application/json")
 				req.Header.Set("X-Wallet-CSRF", tc.csrf)
 				if tc.credential != "" {
-					req.SetBasicAuth("flowledger", tc.credential)
+					req.SetBasicAuth("multi-chain-wallet", tc.credential)
 				}
 				w := httptest.NewRecorder()
 				h.ServeHTTP(w, req)

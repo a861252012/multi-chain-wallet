@@ -8,7 +8,7 @@ import (
 )
 
 func TestTronShastaReadOnly(t *testing.T) {
-	if os.Getenv("FLOWLEDGER_LIVE_TRON") != "1" {
+	if os.Getenv("MULTI_CHAIN_WALLET_LIVE_TRON") != "1" {
 		t.Skip("opt-in read-only Shasta verification")
 	}
 	s, err := NewTronService("https://api.shasta.trongrid.io", "", t.TempDir(), 2)

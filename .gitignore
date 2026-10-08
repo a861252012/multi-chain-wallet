@@ -15,14 +15,6 @@ faucet-config*.json
 /data/
 /coverage.out
 *.log
-# Historical evidence already tracked and covered by its checksum manifests.
-!/docs/evidence/release-2026-09-19/actions.log
-!/docs/evidence/release-2026-09-19/browser-test-logs/browser-e2e.log
-!/docs/evidence/release-2026-09-19/browser-test-logs/browser-fixtures.log
-!/docs/evidence/release-2026-09-19/capture-ui.log
-!/docs/evidence/release-2026-09-19/live-ui-test-log/live.log
-!/docs/evidence/vault-sepolia-2026-09-19/live-enabled.log
-!/docs/evidence/vault-sepolia-2026-09-19/runtime-enable.log
 .DS_Store
 
 # Python

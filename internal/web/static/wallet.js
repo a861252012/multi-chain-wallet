@@ -11,13 +11,13 @@
   let sending = false;
   let vaultEnabled = false;
   let vaultBusy = false;
-  const flowKey = 'flowledger:exchange-flow:' + networkPrefix;
+  const flowKey = 'multi-chain-wallet:exchange-flow:' + networkPrefix;
   let flow;
   try { const saved = JSON.parse(sessionStorage.getItem(flowKey) || 'null'); if (saved && ['eth-usdc','usdc-eth'].includes(saved.direction) && ['wrap','swap','unwrap','done'].includes(saved.phase) && typeof saved.amount === 'string' && typeof saved.id === 'string') flow = saved; } catch {}
   const tokens = new Map();
   let tokensRefreshing = false;
   let tokenRefreshQueued = false;
-  const tokenStorageKey = 'flowledger:tokens:' + networkPrefix;
+  const tokenStorageKey = 'multi-chain-wallet:tokens:' + networkPrefix;
   let historySnapshot = [];
   let historyRefreshError = '';
   let canCreateTransaction = false;
@@ -133,7 +133,7 @@
     }
     if (!$('vault-history').children.length) $('vault-history').append(node('p', '尚無合約操作紀錄，完成存入或取回後會顯示在這裡。', 'muted'));
     const term = $('history-search').value.trim().toLowerCase();
-    transactions = historySnapshot.filter(tx => [tx.hash,tx.to,tx.orderId,tx.symbol,tx.amount,transactionActionLabel(tx),transactionLabel(tx),window.flowledgerAddressLabel?.(tx.to)].some(value=>(String(value || '').toLowerCase().includes(term) || (window.FlowI18n?.t(String(value || '')) || String(value || '')).toLowerCase().includes(term))));
+    transactions = historySnapshot.filter(tx => [tx.hash,tx.to,tx.orderId,tx.symbol,tx.amount,transactionActionLabel(tx),transactionLabel(tx),window.walletAddressLabel?.(tx.to)].some(value=>(String(value || '').toLowerCase().includes(term) || (window.FlowI18n?.t(String(value || '')) || String(value || '')).toLowerCase().includes(term))));
     const list = $('wallet-history');
     list.replaceChildren();
     if (historyRefreshError) list.append(node('p', historyRefreshError, 'error'));
@@ -143,7 +143,7 @@
       const summary = node('div', '', 'history-summary');
       const expanded = node('details', '', 'history-details');
       expanded.append(node('summary', '地址、收據與交易詳情'));
-      const label = window.flowledgerAddressLabel?.(tx.to);
+      const label = window.walletAddressLabel?.(tx.to);
       if (label) { const named = node('p', label); named.translate = false; summary.append(named); }
       const inspect = node('button','交易詳情','secondary');inspect.type='button';inspect.addEventListener('click',()=>{$('diagnostic-hash').value=tx.hash;location.hash='diagnostics-panel';$('diagnose-tx').click();});expanded.append(inspect);
       summary.append(node('strong', transactionActionLabel(tx)), node('p', time(tx.createdAt)));
@@ -360,7 +360,7 @@
       const url = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
       const link = node('a');
       link.href = url;
-      link.download = `flowledger-evm-${walletState.address}.json`;
+      link.download = `multi-chain-wallet-evm-${walletState.address}.json`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       $('backup-feedback').textContent = '已要求瀏覽器下載加密備份，請妥善保存檔案與密碼。';
@@ -421,7 +421,7 @@
   let escrowBusy = false;
   let escrowQuery = 0;
   const escrowStates = {none:'尚未付款',funded:'款項由合約保管',released:'已放款給收款人',refunded:'已退回付款人'};
-  const escrowDraftKey = 'flowledger:escrow-draft:' + networkPrefix;
+  const escrowDraftKey = 'multi-chain-wallet:escrow-draft:' + networkPrefix;
 
   function escrowUnits(value) {
     if (!/^[0-9]+(?:\.[0-9]{1,6})?$/.test(value)) throw new Error('付款金額請輸入最多 6 位小數的正數');

@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/a861252012/testnet-wallet-lab/internal/chain"
+	"github.com/a861252012/multi-chain-wallet/internal/chain"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"

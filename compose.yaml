@@ -1,4 +1,4 @@
-name: flowledger
+name: multi-chain-wallet
 
 services:
   app:
@@ -41,5 +41,6 @@ services:
 
 volumes:
   wallet_data:
+    name: ${WALLET_DATA_VOLUME:-multi-chain-wallet_wallet_data}
   go_modules:
   go_build:
