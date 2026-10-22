@@ -5,9 +5,11 @@ from pathlib import Path
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import tarfile
 import tempfile
+import time
 import unittest
 
 
@@ -50,7 +52,7 @@ class BackupTests(unittest.TestCase):
         self.remote = self.base / "remote.sh"
         self.remote.write_text(remote)
         fake = r'''#!/usr/bin/env python3
-import json, os, subprocess, sys
+import json, os, signal, subprocess, sys, time
 from pathlib import Path
 base = Path(os.environ["FIXTURE"])
 command, args = Path(sys.argv[0]).name, sys.argv[1:]
@@ -64,11 +66,23 @@ if command == "docker":
         if os.getenv("FAIL_STOP"): sys.exit(17)
         (base / "running").write_text("false")
     elif args[0] == "start":
+        (base / "restart-attempted").touch()
+        os.write(2, b"restart diagnostic\n")
         if os.getenv("FAIL_START"): sys.exit(18)
         (base / "running").write_text("true")
 elif command == "tar":
     if "-czf" in args and os.getenv("FAIL_ARCHIVE"): sys.exit(19)
+    if "-czf" in args and os.getenv("BROKEN_PIPE_ARCHIVE"):
+        (base / "archive-started").touch()
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+        while True: os.write(1, b"x" * 65536)
+    if "-czf" in args and os.getenv("WAIT_FOR_HANGUP"):
+        (base / "archive-started").touch()
+        time.sleep(20)
     os.execv(os.environ["REAL_TAR"], [os.environ["REAL_TAR"], *args])
+elif command == "timeout":
+    assert args[:3] == ["--signal=TERM", "--kill-after=10s", "300s"]
+    os.execvp(args[3], args[3:])
 elif command == "ssh":
     sys.exit(subprocess.run(["bash"], input=sys.stdin.buffer.read()).returncode)
 elif command == "age-keygen":
@@ -81,7 +95,7 @@ elif command == "age":
     else:
         Path(args[args.index("-o") + 1]).write_bytes(sys.stdin.buffer.read())
 '''
-        for name in ("docker", "flock", "tar", "ssh", "age", "age-keygen"):
+        for name in ("docker", "flock", "tar", "timeout", "ssh", "age", "age-keygen"):
             path = self.bin / name
             path.write_text(fake)
             path.chmod(0o755)
@@ -183,7 +197,57 @@ elif command == "age":
     def test_restart_failure_is_explicit(self):
         result = self.run_backup(FAIL_START="1")
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn(b"Application restart failed", result.stderr)
+        self.assertIn("restart=failed", (self.new / "backup-recovery.log").read_text())
+
+    def test_recovery_log_failure_does_not_prevent_restart(self):
+        (self.new / "backup-recovery.log").mkdir()
+        result = self.run_backup(FAIL_ARCHIVE="1")
+        self.assertEqual(result.returncode, 19)
+        self.assertTrue((self.base / "restart-attempted").exists())
+        self.assertEqual((self.base / "running").read_text(), "true")
+
+    def test_regular_file_output_is_rejected_before_stopping(self):
+        with (self.base / "unsafe-output").open("wb") as output:
+            result = subprocess.run(["bash", str(self.remote)], env=self.env,
+                                    stdout=output, stderr=subprocess.PIPE)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.mutations(), [])
+        self.assertEqual((self.base / "unsafe-output").read_bytes(), b"")
+
+    def interrupted_backup(self, hangup=False):
+        env = {**self.env, "WAIT_FOR_HANGUP" if hangup else "BROKEN_PIPE_ARCHIVE": "1"}
+        process = subprocess.Popen(["bash", str(self.remote)], env=env,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   start_new_session=True)
+        try:
+            deadline = time.monotonic() + 5
+            while not (self.base / "archive-started").exists():
+                self.assertIsNone(process.poll(), "backup exited before archive interruption")
+                self.assertLess(time.monotonic(), deadline, "archive did not start")
+                time.sleep(0.01)
+            process.stdout.close()
+            process.stderr.close()
+            if hangup:
+                os.killpg(process.pid, signal.SIGHUP)
+            return process.wait(timeout=10)
+        finally:
+            if process.poll() is None:
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait(timeout=5)
+            process.stdout.close()
+            process.stderr.close()
+
+    def test_real_broken_pipe_restarts_after_both_parent_streams_close(self):
+        self.assertNotEqual(self.interrupted_backup(), 0)
+        self.assertTrue((self.base / "restart-attempted").exists())
+        self.assertEqual((self.base / "running").read_text(), "true")
+        self.assertIn("restart=ok", (self.new / "backup-recovery.log").read_text())
+
+    def test_real_hangup_restarts_after_both_parent_streams_close(self):
+        self.assertEqual(self.interrupted_backup(hangup=True), 129)
+        self.assertTrue((self.base / "restart-attempted").exists())
+        self.assertEqual((self.base / "running").read_text(), "true")
+        self.assertIn("archive_exit=129 restart=ok", (self.new / "backup-recovery.log").read_text())
 
     def test_local_transport_verifies_before_reporting_without_secret_output(self):
         result = self.run_backup(local=True)

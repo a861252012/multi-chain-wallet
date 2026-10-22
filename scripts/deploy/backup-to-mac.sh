@@ -18,8 +18,10 @@ output="$backups/wallet-demo-$(date -u +%Y%m%dT%H%M%SZ).tar.gz.age"
 trap 'rm -f "$output.partial"' EXIT
 ssh -i "$HOME/.ssh/wallet-demo-admin" -o IdentitiesOnly=yes \
   -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/wallet-demo-known-hosts" \
-  -o ConnectTimeout=10 "ubuntu@$1" 'sudo bash -s' <<'REMOTE' | age -r "$recipient" -o "$output.partial"
+  -o BatchMode=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
+  -o ConnectTimeout=10 "ubuntu@$1" 'sudo -n bash -s' <<'REMOTE' | age -r "$recipient" -o "$output.partial"
 set -euo pipefail
+umask 077
 cd /opt/multi-chain-wallet
 exec 9>deploy.lock
 flock -w 180 9
@@ -50,20 +52,33 @@ print(source)
 for file in .env current-image compose.demo.yaml verify-demo.py; do
   [[ -f "$file" && ! -L "$file" ]] || { echo 'Backup configuration is incomplete or symlinked' >&2; exit 1; }
 done
+command -v timeout >/dev/null
+python3 -c 'import os, stat, sys; mode = os.fstat(1).st_mode; sys.exit(0 if stat.S_ISFIFO(mode) or stat.S_ISSOCK(mode) else "Backup output must be an SSH pipe or socket")'
 # Always bring the application back even if archive creation or transfer fails.
 restart_application() {
   result=$?
+  trap '' HUP INT TERM PIPE
   trap - EXIT
+  # A disconnected SSH pipe must not interrupt recovery or receive its output.
+  exec >/dev/null 2>&1
+  recovery=ok
   if ! docker start "$container" >/dev/null || [[ $(docker inspect --format '{{.State.Running}}' "$container") != true ]]; then
-    echo 'Application restart failed after backup; operator action required' >&2
-    exit 1
+    recovery=failed
   fi
+  if [[ ! -L backup-recovery.log ]]; then
+    printf 'archive_exit=%s restart=%s\n' "$result" "$recovery" >>backup-recovery.log || :
+  fi
+  [[ "$recovery" == ok ]] || exit 1
   exit "$result"
 }
 trap restart_application EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+trap 'exit 141' PIPE
 docker stop -t 45 "$container" >/dev/null
 [[ $(docker inspect --format '{{.State.Running}}' "$container") == false ]] || { echo 'Application did not stop for backup' >&2; exit 1; }
-tar --exclude='wallet/.lock' -czf - .env current-image compose.demo.yaml verify-demo.py -C "${wallet_source%/wallet}" wallet
+timeout --signal=TERM --kill-after=10s 300s tar --exclude='wallet/.lock' -czf - .env current-image compose.demo.yaml verify-demo.py -C "${wallet_source%/wallet}" wallet
 REMOTE
 age -d -i "$keys/backup-age.key" "$output.partial" | tar -tzf - >/dev/null
 mv "$output.partial" "$output"
