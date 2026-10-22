@@ -14,6 +14,8 @@
 
 [本地启动](docs/wallet-reference.md#run-with-docker) · [架构](docs/architecture.md) · [交易恢复验证](docs/demo-script.md) · [Go 风格与检查](docs/go-style.md) · [验收证据](docs/evidence/README.md)
 
+本项目构建与测试使用 **Go 1.26.10**。运行本地 Go 或浏览器测试前，先完成[工具链设置](docs/go-style.md#本機工具鏈設定)；Go 1.27.3 虽已修补安全问题，目前完整测试仍不支持。
+
 ## 主要功能
 
 - 创建、恢复及管理本地钱包，支持加密备份。

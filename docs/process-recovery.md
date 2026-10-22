@@ -13,7 +13,7 @@
 
 ## 隔離重跑
 
-使用已有的專案映像及 Go modules volume：
+先依 [Docker 操作指南](wallet-reference.md#run-with-docker) 重建目前版本的專案映像並下載 Go modules，再從 repository 根目錄使用該映像及 modules volume：
 
 ```sh
 docker run --rm --network none \

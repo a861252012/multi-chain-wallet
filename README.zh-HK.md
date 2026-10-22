@@ -14,6 +14,8 @@
 
 [本機啟動](docs/wallet-reference.md#run-with-docker) · [架構](docs/architecture.md) · [交易復原驗證](docs/demo-script.md) · [Go 風格與檢查](docs/go-style.md) · [驗收證據](docs/evidence/README.md)
 
+本專案建置及測試使用 **Go 1.26.10**。執行本機 Go 或瀏覽器測試前，先完成[工具鏈設定](docs/go-style.md#本機工具鏈設定)；Go 1.27.3 雖已修補安全問題，目前完整測試仍未支援。
+
 ## 主要功能
 
 - 建立、還原及管理本機錢包，支援加密備份。

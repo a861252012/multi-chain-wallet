@@ -28,6 +28,8 @@
 
 ## 本機編譯與測試
 
+先在目前終端機完成 [Go 1.26.10 工具鏈設定](go-style.md#本機工具鏈設定)，再從 repository 根目錄執行以下指令。
+
 CI 的瀏覽器 job 使用 Node.js 22，Go 版本依 `go.mod`；容器版本固定於 Dockerfile。本機實際工具版本須隨驗收紀錄保存。編譯器固定 Solidity 0.8.37，optimizer 開啟、200 runs、EVM Cancun。npm override 將編譯工具的 `tmp` 固定到 0.2.7；不影響 Solidity 程式碼。
 
 ```sh

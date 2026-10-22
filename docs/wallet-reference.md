@@ -52,6 +52,10 @@ Amounts and networks are fixed by the server. EVM recipients must belong to the 
 
 See [button acceptance evidence and limits](test-faucet-2026-09-15.md).
 
+## Local Go commands
+
+Before running native `go`, `gofmt`, Air or `scripts/send_and_verify.sh` commands in this guide, complete the [Go 1.26.10 shell setup](go-style.md#本機工具鏈設定) in the same terminal. This also selects the correct Go for browser-test subprocesses. Docker commands use their pinned toolchain and do not require this host setup.
+
 ## Historical transaction evidence
 
 The September 15 acceptance run completed **13 outgoing transactions across five testnets**: Ethereum Sepolia (native transfer, WETH wrap/unwrap, approvals, both WETH/USDC swap directions and USDC transfer), Base/OP/Arbitrum Sepolia (native transfers), and TRON Shasta (TRX and faucet test-USDT transfers). See [September 15 transaction links and limits](onchain-acceptance-2026-09-15.md). The [September 16 follow-up](onchain-acceptance-2026-09-16.md) records one native transfer each on Polygon Amoy and Solana Devnet, bringing those two historical records to 15 transactions across seven testnets. These dated results do not establish fresh acceptance of the current code or every supported operation.
@@ -66,8 +70,10 @@ This contacts public testnet RPCs, validates receipt inclusion and reports curre
 
 ## Run with Docker
 
+Keep an existing `.env`, especially `WALLET_DATA_VOLUME`, credentials and RPC settings. The command below creates it only for a new installation.
+
 ```sh
-cp .env.example .env
+if [ ! -e .env ]; then cp .env.example .env; fi
 # WALLET_ACCESS_TOKEN may remain empty for the localhost demo
 docker compose build
 docker compose run --rm --no-deps app go mod download
@@ -81,6 +87,8 @@ docker compose ps
 docker compose logs -f app
 docker compose restart app
 ```
+
+After a Go base-image update, run `docker compose build`, `docker compose run --rm --no-deps app go mod download`, then `docker compose up -d --force-recreate app`. A restart alone keeps the old image. Existing wallet volume selection must remain unchanged.
 
 Source and embedded HTML/CSS/JS changes require `restart app`. Changed Compose environment/volumes require `docker compose up -d --force-recreate app`.
 

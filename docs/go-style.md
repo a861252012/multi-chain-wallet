@@ -21,16 +21,43 @@
 ## 可讀性與相容性
 
 - 分支使用早期返回及有限狀態的 `switch`。
-- 使用 Go 1.26 的 `min`、`slices.SortFunc`／`SortStableFunc`、`slices.Clone`、`maps.Copy`、`errors.AsType`、`strings.SplitSeq` 與 `WaitGroup.Go`。
+- 使用 `min` 內建函式，以及標準函式庫的 `slices.SortFunc`／`SortStableFunc`、`slices.Clone`、`maps.Copy`、`errors.AsType`、`strings.SplitSeq` 與 `WaitGroup.Go`。
 - API 契約包含欄位名稱、`omitempty`、時間格式，以及 nil 與空陣列的差別。
 - EVM journal 相容缺少 `To`／`Action` 的舊紀錄，也接受舊 opaque quote ID。交易原始位元組與 hash 先持久化再廣播；並行更新使用 CAS 版本檢查與既有鎖順序。
 - 跨鏈 journal 的業務型別沒有 JSON tag，disk DTO 獨立於公開回應型別。TRON 使用 `slices.Equal` 比較業務紀錄。
 
 ## 工具鏈安全更新
 
-專案最低工具鏈為 Go 1.26.10；本機使用 1.27 分支時，至少使用 Go 1.27.3。這兩個版本包含 GO-2026-6809 的憑證信任修補。Docker 開發、發佈建置、CI 漏洞掃描與部署 smoke probe 固定相同的 `golang:1.26.10-alpine` 多平台 digest；browser CI 從 `go.mod` 取得版本。
+本專案建置與完整測試使用 **Go 1.26.10**。Docker 開發、發佈建置、CI 漏洞掃描與部署 smoke probe 固定相同的 `golang:1.26.10-alpine` 多平台 digest；browser CI 從 `go.mod` 取得版本。
 
-目前測試用的 `cockroachdb/swiss` 依賴 Go runtime internals，無法以 Go 1.27 編譯。因此此專案本機建置／測試使用 `GOTOOLCHAIN=go1.26.10 go test ./...`（或既有 Docker 流程）；執行 Air 時使用 `GOTOOLCHAIN=go1.26.10 air`。瀏覽器測試會設定 `GOTOOLCHAIN=local`，須將 Go 1.26.10 的 `bin` 放在該次命令 PATH 最前方，與 CI 保持一致。不要以本機預設 1.27.3 的漏洞掃描通過代替相容性測試。
+Go 1.26.10 與 1.27.3 都包含 GO-2026-6809 的憑證信任修補，但工具鏈安全版本與專案相容性是兩項檢查。目前測試用的 `cockroachdb/swiss` 依賴 Go runtime internals，其 build constraint 排除 Go 1.27；因此本專案完整測試尚不支援 1.27.3。主機預設可以保留已修補的 1.27.3，執行此專案時選用下列 1.26.10 環境。
+
+### 本機工具鏈設定
+
+從 repository 根目錄，在要執行專案指令的終端機先執行：
+
+```sh
+wallet_go_root=$(GOTOOLCHAIN=go1.26.10 go env GOROOT) &&
+export PATH="$wallet_go_root/bin:$PATH" GOTOOLCHAIN=local &&
+go version
+```
+
+輸出必須為 `go version go1.26.10` 加上主機的 OS／架構。首次使用可能下載官方工具鏈；下載失敗時先停止後續指令。設定只作用於目前 shell 與子程序，開新終端機後須重做，不使用 `go env -w` 改全域設定。
+
+這個 PATH 同時讓 `go`、`gofmt`、Air 的 build command 與 npm 啟動的 Go 子程序使用 1.26.10。瀏覽器 fixture 會設定 `GOTOOLCHAIN=local`，因此不能只設定 `GOTOOLCHAIN=go1.26.10` 而保留原 PATH。已安裝 Air 且已有本機 `.air.toml` 時，可在上述環境執行 `air`；標準啟動方式仍見 [Docker 操作指南](wallet-reference.md#run-with-docker)。
+
+### 本機驗證指令
+
+完成上述設定後執行：
+
+```sh
+go test -race -count=1 ./...
+go vet ./...
+test -z "$(gofmt -l cmd internal contracts tests)"
+go fix -diff ./...
+```
+
+`go fix -diff` 預期沒有輸出；有差異須先檢查。瀏覽器測試的 Node／Chromium 準備及指令見 [ETH 合約測試](eth-vault.md#本機編譯與測試)。掃描工具已安裝時，在相同環境執行 `govulncheck ./cmd/... ./internal/...`；CI 固定使用 `govulncheck@v1.8.0`。掃描通過不取代編譯與行為回歸，也不代表已部署的執行檔同步更新。
 
 安全更新時同步更新 `go.mod`、兩份 Dockerfile、`.github/workflows/verify.yml` 與 `tests/deployment/smoke.py` 的版本及 digest，並以容器工具鏈完成 race、vet、格式、go fix、govulncheck、瀏覽器與部署 smoke 回歸。本機較新的工具鏈掃描不能取代發佈工具鏈及實際執行檔掃描。只升級編譯器不會修補既有執行檔，必須重建與部署，再核對執行中的版本／映像 digest。
 

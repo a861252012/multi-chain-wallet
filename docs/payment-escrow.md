@@ -55,6 +55,8 @@
 
 ## 測試入口
 
+先在目前終端機完成 [Go 1.26.10 工具鏈設定](go-style.md#本機工具鏈設定)，再從 repository 根目錄執行以下指令。
+
 ```sh
 npm ci --ignore-scripts --prefix contracts
 npm run check --prefix contracts

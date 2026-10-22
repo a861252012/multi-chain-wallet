@@ -1,5 +1,7 @@
 # ERC-4337 鏈上驗收
 
+重新執行本文件的本機指令前，先完成 [Go 1.26.10 工具鏈設定](go-style.md#本機工具鏈設定)。下列歷史鏈上結果仍保留原驗收範圍。
+
 這個指令只驗證 Ethereum Sepolia、EntryPoint v0.6 與 SimpleAccount：第一次發送時部署帳戶，再轉 1 wei 給 owner。它沿用套件的 Builder、Signer 和 Bundler client，沒有接入錢包 UI。
 
 ## 套件範圍與本機測試

@@ -14,6 +14,8 @@ A multi-chain wallet built with Go for EVM, Solana and TRON. The demo runs on te
 
 [Local setup](docs/wallet-reference.md#run-with-docker) · [Architecture](docs/architecture.md) · [Recovery checks](docs/demo-script.md) · [Go style and checks](docs/go-style.md) · [Verification evidence](docs/evidence/README.md)
 
+Build and test this project with **Go 1.26.10**. Follow the [local toolchain setup](docs/go-style.md#本機工具鏈設定) before running native Go or browser tests; Go 1.27.3 is security-patched but is not supported by the current full test suite.
+
 ## Features
 
 - Create, restore and manage local wallets with encrypted backups.

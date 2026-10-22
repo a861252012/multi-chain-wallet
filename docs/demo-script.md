@@ -12,7 +12,7 @@ These are distinct failure boundaries. Run recovery checks only with disposable 
 | Process stops after durable append but before broadcast-state update | A `pending` record may remain; RPC acceptance is unknown from that state alone | `TestProcessKillRestartReusesRaw`: SIGKILL after the local mock receives bytes, before its response; a new Service opens the released process lock, preserves nonce protection and retries identical bytes. This does not cover a kill before the request reaches the mock or power loss. |
 | Receipt no longer matches the canonical block | Preserve uncertainty/reorg state and nonce protection | `TestHistoryUpdatesReorgDetectedFromRPC`: mock receipt/header mismatch, not a public-chain reorg |
 
-To rerun the recovery checks, run from the repository root:
+First rebuild the current image and download its modules using [Run with Docker](wallet-reference.md#run-with-docker). Then run the recovery checks from the repository root:
 
 ```sh
 docker run --rm --network none \
@@ -25,4 +25,4 @@ docker run --rm --network none \
 
 This container has no external network and no live wallet volume. Tests use temporary wallet directories and mock RPCs. A passing result covers the assertions above, not power-loss durability or blockchain execution.
 
-The separate [`TestE2EEscrowPaymentReleaseRefundRecovery`](../tests/e2e/escrow_test.go) uses a proxy to drop the RPC response after a simulated EVM accepts the transaction. It reopens the service and journal, retries the same quote without another broadcast, then checks the receipt and order state. Run it with `go test -race -count=1 -run '^TestE2EEscrowPaymentReleaseRefundRecovery$' ./tests/e2e`. This covers local integration with a simulated EVM, not response loss on public Sepolia.
+The separate [`TestE2EEscrowPaymentReleaseRefundRecovery`](../tests/e2e/escrow_test.go) uses a proxy to drop the RPC response after a simulated EVM accepts the transaction. It reopens the service and journal, retries the same quote without another broadcast, then checks the receipt and order state. After the [Go 1.26.10 shell setup](go-style.md#本機工具鏈設定), run it with `go test -race -count=1 -run '^TestE2EEscrowPaymentReleaseRefundRecovery$' ./tests/e2e`. This covers local integration with a simulated EVM, not response loss on public Sepolia.
