@@ -26,6 +26,16 @@
 - EVM journal 相容缺少 `To`／`Action` 的舊紀錄，也接受舊 opaque quote ID。交易原始位元組與 hash 先持久化再廣播；並行更新使用 CAS 版本檢查與既有鎖順序。
 - 跨鏈 journal 的業務型別沒有 JSON tag，disk DTO 獨立於公開回應型別。TRON 使用 `slices.Equal` 比較業務紀錄。
 
+## 工具鏈安全更新
+
+專案最低工具鏈為 Go 1.26.10；本機使用 1.27 分支時，至少使用 Go 1.27.3。這兩個版本包含 GO-2026-6809 的憑證信任修補。Docker 開發、發佈建置、CI 漏洞掃描與部署 smoke probe 固定相同的 `golang:1.26.10-alpine` 多平台 digest；browser CI 從 `go.mod` 取得版本。
+
+目前測試用的 `cockroachdb/swiss` 依賴 Go runtime internals，無法以 Go 1.27 編譯。因此此專案本機建置／測試使用 `GOTOOLCHAIN=go1.26.10 go test ./...`（或既有 Docker 流程）；執行 Air 時使用 `GOTOOLCHAIN=go1.26.10 air`。瀏覽器測試會設定 `GOTOOLCHAIN=local`，須將 Go 1.26.10 的 `bin` 放在該次命令 PATH 最前方，與 CI 保持一致。不要以本機預設 1.27.3 的漏洞掃描通過代替相容性測試。
+
+安全更新時同步更新 `go.mod`、兩份 Dockerfile、`.github/workflows/verify.yml` 與 `tests/deployment/smoke.py` 的版本及 digest，並以容器工具鏈完成 race、vet、格式、go fix、govulncheck、瀏覽器與部署 smoke 回歸。本機較新的工具鏈掃描不能取代發佈工具鏈及實際執行檔掃描。只升級編譯器不會修補既有執行檔，必須重建與部署，再核對執行中的版本／映像 digest。
+
+參考：[Go 安全公告](https://pkg.go.dev/vuln/GO-2026-6809)。
+
 ## 驗證與限制
 
 `go test ./...` 包含 DTO literal JSON 契約、nil/empty、儲存格式、舊 journal、簽名重載、原始 bytes 重送、SIGKILL 復原及並行狀態更新測試。`TestLayerBoundaries` 檢查依賴方向與 web DTO 外部欄位型別；不涵蓋每個 handler 的實際資料流。

@@ -46,10 +46,10 @@ checks.request = isolated_request
 
 try:
     arch = docker("image", "inspect", "--format", "{{.Architecture}}", image)
-    docker("run", "--rm", "--network", "none", "-e", "GOARCH="+arch, "-v", str(root)+":/src:ro", "-v", probe_dir.name+":/out", "-e", "GOCACHE=/tmp/cache", "-e", "GO111MODULE=off", "-e", "CGO_ENABLED=0", "golang:1.26-alpine@sha256:ce864e7223ac17b1775e6fd0b4c0db580c2eb50e7953a427916379e4b92a1628", "go", "build", "-o", "/out/probe", "/src/tests/deployment/probe.go")
+    docker("run", "--rm", "--network", "none", "-e", "GOARCH="+arch, "-v", str(root)+":/src:ro", "-v", probe_dir.name+":/out", "-e", "GOCACHE=/tmp/cache", "-e", "GO111MODULE=off", "-e", "CGO_ENABLED=0", "golang:1.26.10-alpine@sha256:5cb67f19c5e7994dcb80c074f7cfca8aeeada45bbdca035f73df269cefdcce61", "go", "build", "-o", "/out/probe", "/src/tests/deployment/probe.go")
     docker("volume", "create", volume)
     # Reuse the already available build image only to set disposable volume ownership.
-    docker("run", "--rm", "--network", "none", "-v", volume+":/data", "golang:1.26-alpine@sha256:ce864e7223ac17b1775e6fd0b4c0db580c2eb50e7953a427916379e4b92a1628", "chown", "10001:10001", "/data")
+    docker("run", "--rm", "--network", "none", "-v", volume+":/data", "golang:1.26.10-alpine@sha256:5cb67f19c5e7994dcb80c074f7cfca8aeeada45bbdca035f73df269cefdcce61", "chown", "10001:10001", "/data")
     access_token = secrets.token_hex(32)
     args = ["run", "--platform", "linux/"+arch, "-d", "--name", name, "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true", "--memory", "640m", "--memory-swap", "640m", "-e", "GOMEMLIMIT=480MiB", "--cpus", "1", "--pids-limit", "128", "-v", probe_dir.name+"/probe:/probe:ro", "-v", volume+":/data/wallet", "-e", "PUBLIC_ORIGIN=https://wallet.example", "-e", "WALLET_ACCESS_TOKEN="+access_token]
     for key in ["SEPOLIA", "ARBITRUM_SEPOLIA", "BASE_SEPOLIA", "OP_SEPOLIA", "POLYGON_AMOY", "SOLANA_DEVNET", "TRON_SHASTA"]:

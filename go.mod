@@ -1,6 +1,6 @@
 module github.com/a861252012/multi-chain-wallet
 
-go 1.26.1
+go 1.26.10
 
 require (
 	github.com/ethereum/go-ethereum v1.17.5
