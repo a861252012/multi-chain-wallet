@@ -41,7 +41,7 @@ services:
       - "127.0.0.1:8090:8090"
     volumes:
       - type: bind
-        source: ./wallet
+        source: ${WALLET_DATA_DIR:-./wallet}
         target: /data/wallet
         bind:
           create_host_path: false

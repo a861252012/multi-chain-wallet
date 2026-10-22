@@ -23,12 +23,47 @@ set -euo pipefail
 cd /opt/multi-chain-wallet
 exec 9>deploy.lock
 flock -w 180 9
-running=$(docker inspect --format '{{.State.Running}}' multi-chain-wallet-demo-app-1)
+container=multi-chain-wallet-demo-app-1
+running=$(docker inspect --format '{{.State.Running}}' "$container")
 [[ "$running" == true ]] || { echo 'Application is not running; investigate before backup' >&2; exit 1; }
+wallet_source=$(docker inspect --format '{{json .Mounts}}' "$container" | python3 -c '
+import json
+from pathlib import Path
+import sys
+try:
+    all_mounts = json.load(sys.stdin)
+    if any(m.get("Destination", "").startswith("/data/wallet/") for m in all_mounts):
+        raise ValueError()
+    mounts = [m for m in all_mounts if m.get("Destination") == "/data/wallet"]
+    if len(mounts) != 1 or mounts[0].get("Type") != "bind" or mounts[0].get("RW") is not True:
+        raise ValueError()
+    source = mounts[0].get("Source")
+    if source not in ("/opt/testnet-wallet-lab/wallet", "/opt/multi-chain-wallet/wallet"):
+        raise ValueError()
+    path = Path(source)
+    if not path.is_dir() or path.resolve(strict=True) != path:
+        raise ValueError()
+except (ValueError, TypeError, AttributeError, OSError):
+    raise SystemExit("Expected one writable wallet bind at a supported physical directory")
+print(source)
+')
+for file in .env current-image compose.demo.yaml verify-demo.py; do
+  [[ -f "$file" && ! -L "$file" ]] || { echo 'Backup configuration is incomplete or symlinked' >&2; exit 1; }
+done
 # Always bring the application back even if archive creation or transfer fails.
-trap 'docker start multi-chain-wallet-demo-app-1 >/dev/null' EXIT
-docker stop -t 45 multi-chain-wallet-demo-app-1 >/dev/null
-tar --exclude='wallet/.lock' -czf - wallet .env current-image compose.demo.yaml verify-demo.py
+restart_application() {
+  result=$?
+  trap - EXIT
+  if ! docker start "$container" >/dev/null || [[ $(docker inspect --format '{{.State.Running}}' "$container") != true ]]; then
+    echo 'Application restart failed after backup; operator action required' >&2
+    exit 1
+  fi
+  exit "$result"
+}
+trap restart_application EXIT
+docker stop -t 45 "$container" >/dev/null
+[[ $(docker inspect --format '{{.State.Running}}' "$container") == false ]] || { echo 'Application did not stop for backup' >&2; exit 1; }
+tar --exclude='wallet/.lock' -czf - .env current-image compose.demo.yaml verify-demo.py -C "${wallet_source%/wallet}" wallet
 REMOTE
 age -d -i "$keys/backup-age.key" "$output.partial" | tar -tzf - >/dev/null
 mv "$output.partial" "$output"

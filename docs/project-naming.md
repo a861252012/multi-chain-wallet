@@ -22,7 +22,17 @@ Prepare the new installation and trust settings before setting `DEMO_DEPLOY_REPO
 
 Install the new scripts and service definitions with `/opt/multi-chain-wallet` as their base. Stop the previous Compose application before starting `multi-chain-wallet-demo`, preserve the full wallet data with its ownership and permissions, and never run both applications against the same wallet. The old `current-image` value is not accepted by the new repository pin: keep it with the previous installation for rollback rather than relabelling its digest as a newly published image. Bootstrap the new installation using a newly verified image. If verification fails, stop the new application and restore the preserved installation.
 
+For an existing VM whose wallet is physically stored at `/opt/testnet-wallet-lab/wallet`, copy its private environment settings into the new installation and set `WALLET_DATA_DIR=/opt/testnet-wallet-lab/wallet` there. `compose.demo.yaml` uses this optional bind source; new installations default to `./wallet`. Confirm the directory already exists, retains its ownership and permissions, and is the exact `/data/wallet` mount of both versions. Do not create an empty replacement or copy the wallet while either application is running. Keeping one physical directory also preserves new journal entries if application code must be rolled back: stop the new application before restarting the old one against that same directory. Never restore a pre-upgrade data snapshot over transactions or accounts written during acceptance.
+
 Read back the deployed `X-App-Version`, wallet state and browser behavior before resuming the timer and notifications, including `DEMO_NOTIFY_ENABLED`. A passing source/build test does not establish that this VM transition occurred.
+
+## Encrypted VM backup and restore
+
+After the new installation is running, `scripts/deploy/backup-to-mac.sh VM_IPV4` runs from the owner's Mac over the reviewed SSH route. It briefly stops the exact `multi-chain-wallet-demo-app-1` container under the deployment lock, archives its actual wallet bind with the new configuration, and restarts it even if archiving fails. The script accepts only one writable `/data/wallet` bind at `/opt/testnet-wallet-lab/wallet` or `/opt/multi-chain-wallet/wallet`, with no symlink path or nested mounts. It does not back up an old container before migration; use the separately reviewed old-installation backup procedure for that stage.
+
+The archive stores that directory as `wallet/` alongside `.env`, `current-image`, `compose.demo.yaml` and `verify-demo.py`. It is encrypted on the Mac and decrypted only for archive verification before being reported successful. Keep the recovery key separate and preserve the old installation/scripts/image for migration rollback. A backup failure or restart failure is not success and requires investigation before retrying.
+
+When restoring to another host or directory, inspect the archived `.env` privately: an absolute `WALLET_DATA_DIR` still names the original host path. Restore the complete wallet directory with its original ownership and permissions, then set the destination installation's `WALLET_DATA_DIR` to that verified physical directory, or remove the override only when `./wallet` is the intended restored location. Confirm the resolved Compose bind before starting. Do not blindly reuse the original override or start against an empty directory.
 
 ## Historical evidence
 
