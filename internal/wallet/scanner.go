@@ -55,7 +55,7 @@ func scanProgressResponse(state *scanState) *ScanProgress {
 	return &ScanProgress{Enabled: state.Enabled, Start: state.Start, Next: state.Next, Finalized: state.Finalized, Tokens: tokens, Error: state.Error, UpdatedAt: state.UpdatedAt}
 }
 
-func scanProgressFromDisk(stored scanProgressDisk) (*scanState, error) {
+func scanProgressFromDisk(stored scanProgressDisk, chainID int64) (*scanState, error) {
 	if len(stored.Tokens) > 200 {
 		return nil, errors.New("同步進度檔代幣數量超過上限")
 	}
@@ -66,10 +66,14 @@ func scanProgressFromDisk(stored scanProgressDisk) (*scanState, error) {
 	}
 	var tokens []EVMAddress
 	if stored.Tokens != nil {
-		tokens = make([]EVMAddress, len(stored.Tokens))
+		tokens = make([]EVMAddress, 0, len(stored.Tokens))
 	}
-	for i, token := range stored.Tokens {
-		tokens[i] = EVMAddress(token)
+	for _, token := range stored.Tokens {
+		// Older scans classified Sepolia's protocol ETH emitter as an ERC-20 token.
+		if chain.IsNativeTransferEmitter(chainID, common.HexToAddress(token)) {
+			continue
+		}
+		tokens = append(tokens, EVMAddress(token))
 	}
 	return &scanState{
 		ExplicitStart: stored.ExplicitStart,
@@ -105,7 +109,7 @@ func (s *Service) scanProgress() (*scanState, error) {
 	if json.Unmarshal(data, &stored) != nil {
 		return nil, errors.New("同步進度檔格式錯誤")
 	}
-	return scanProgressFromDisk(stored)
+	return scanProgressFromDisk(stored, s.client.ChainID())
 }
 
 func (s *Service) ScanProgress() (*ScanProgress, error) {
@@ -197,6 +201,9 @@ func (s *Service) ScanOnce(ctx context.Context) error {
 			token, parseErr := ParseEVMAddress(raw)
 			if parseErr != nil {
 				return parseErr
+			}
+			if chain.IsNativeTransferEmitter(s.client.ChainID(), common.HexToAddress(string(token))) {
+				continue
 			}
 			if !known[token] && len(state.Tokens) < 200 {
 				state.Tokens = append(state.Tokens, token)

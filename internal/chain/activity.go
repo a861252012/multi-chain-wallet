@@ -18,6 +18,9 @@ import (
 const SepoliaUSDC = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
 const SepoliaWETH = "0xfff9976782d46cc05630d1f6ebab18b2324d6b14"
 
+// Sepolia Glamsterdam activation timestamp, specified by EIP-7773.
+const sepoliaNativeTransferTime uint64 = 1791294816
+
 var transferTopic = crypto.Keccak256Hash([]byte("Transfer(address,address,uint256)"))
 var depositTopic = crypto.Keccak256Hash([]byte("Deposit(address,uint256)"))
 var withdrawalTopic = crypto.Keccak256Hash([]byte("Withdrawal(address,uint256)"))
@@ -25,6 +28,37 @@ var vaultWithdrawnTopic = crypto.Keccak256Hash([]byte("Withdrawn(address,uint256
 var vaultDepositedTopic = crypto.Keccak256Hash([]byte("Deposited(address,uint256)"))
 var ErrUnrelated = errors.New("此交易沒有可辨識、與本錢包相關的收支")
 var zeroBytes12 [12]byte
+var ethTransferSystemAddress = common.HexToAddress("0xfffffffffffffffffffffffffffffffffffffffe")
+
+// IsNativeTransferEmitter identifies the EIP-7708 emitter only on the verified
+// Sepolia network. Other EVM networks do not inherit this protocol assumption.
+func IsNativeTransferEmitter(chainID int64, address common.Address) bool {
+	return chainID == SepoliaID && address == ethTransferSystemAddress
+}
+
+// nativeTransferLogs validates receipt provenance before selecting protocol logs.
+// A malformed system log must not silently fall back to legacy ETH evidence.
+func nativeTransferLogs(r *types.Receipt, chainID int64) ([]*types.Log, error) {
+	var native []*types.Log
+	seen := map[uint]bool{}
+	for i, l := range r.Logs {
+		if l == nil || r.BlockNumber == nil || l.Removed || l.TxHash != r.TxHash || l.BlockHash != r.BlockHash || l.BlockNumber != r.BlockNumber.Uint64() || seen[l.Index] {
+			return nil, ErrUnavailable
+		}
+		if i > 0 && l.Index < r.Logs[i-1].Index {
+			return nil, ErrUnavailable
+		}
+		seen[l.Index] = true
+		if !IsNativeTransferEmitter(chainID, l.Address) {
+			continue
+		}
+		if len(l.Topics) != 3 || l.Topics[0] != transferTopic || len(l.Data) != 32 || !bytes.Equal(l.Topics[1][:12], zeroBytes12[:]) || !bytes.Equal(l.Topics[2][:12], zeroBytes12[:]) || l.Topics[1] == l.Topics[2] || new(big.Int).SetBytes(l.Data).Sign() == 0 {
+			return nil, ErrUnavailable
+		}
+		native = append(native, l)
+	}
+	return native, nil
+}
 
 // Activity reads canonical receipt evidence. It does not treat pending intent as an asset movement.
 func (c *Client) Activity(ctx context.Context, hash string, owner common.Address, configuredVault ...common.Address) (*Activity, error) {
@@ -79,6 +113,17 @@ func (c *Client) Activity(ctx context.Context, hash string, owner common.Address
 		out.state = transactionReorgDetected
 		return activityToAPI(out), nil
 	}
+	if c.ChainID() == SepoliaID && h.Time >= sepoliaNativeTransferTime && r.Status == types.ReceiptStatusSuccessful && tx.Value().Sign() > 0 {
+		target := r.ContractAddress
+		if tx.To() != nil {
+			target = *tx.To()
+		}
+		// After activation, a nonzero external transfer (including creation)
+		// cannot use legacy fallback when its required first system log is absent.
+		if from != target && (len(r.Logs) == 0 || r.Logs[0] == nil || !IsNativeTransferEmitter(c.ChainID(), r.Logs[0].Address)) {
+			return nil, ErrUnavailable
+		}
+	}
 	blockTime := time.Unix(int64(h.Time), 0).UTC()
 	out.block, out.blockHash, out.blockTime = r.BlockNumber, r.BlockHash, &blockTime
 	out.state = transactionReverted
@@ -89,9 +134,18 @@ func (c *Client) Activity(ctx context.Context, hash string, owner common.Address
 	if err != nil {
 		return nil, err
 	}
-	// Only the server-configured Sepolia vault can attest to internal ETH withdrawals.
+	// Legacy receipts without native protocol logs may use the configured vault's
+	// application events as ETH evidence.
 	if c.ChainID() == SepoliaID && len(configuredVault) == 1 && configuredVault[0] != (common.Address{}) && r.Status == types.ReceiptStatusSuccessful && from == owner && tx.To() != nil && *tx.To() == configuredVault[0] {
+		nativeLogs, err := nativeTransferLogs(r, c.ChainID())
+		if err != nil {
+			return nil, err
+		}
 		for _, log := range r.Logs {
+			// Protocol logs already account for every native leg in this receipt.
+			if len(nativeLogs) != 0 {
+				break
+			}
 			if log.Address != configuredVault[0] || len(log.Topics) != 2 || log.Topics[1] != common.BytesToHash(owner.Bytes()) || len(log.Data) != 32 {
 				continue
 			}
@@ -139,6 +193,10 @@ func (c *Client) Activity(ctx context.Context, hash string, owner common.Address
 
 func receiptMovements(tx *types.Transaction, r *types.Receipt, from, owner common.Address, chainIDs ...int64) ([]movementRecord, error) {
 	moves := []movementRecord{}
+	chainID := int64(SepoliaID)
+	if len(chainIDs) != 0 {
+		chainID = chainIDs[0]
+	}
 	native := "ETH"
 	if len(chainIDs) > 0 && chainIDs[0] == 80002 {
 		native = "POL"
@@ -153,28 +211,38 @@ func receiptMovements(tx *types.Transaction, r *types.Receipt, from, owner commo
 		add(movementFee, native, fee, common.Address{}, "receipt.gasUsed × effectiveGasPrice")
 	}
 	if r.Status != types.ReceiptStatusSuccessful {
+		for _, l := range r.Logs {
+			if l != nil && IsNativeTransferEmitter(chainID, l.Address) {
+				return nil, ErrUnavailable
+			}
+		}
 		return moves, nil
 	}
-	if from == owner {
-		target := r.ContractAddress
-		if tx.To() != nil {
-			target = *tx.To()
-		}
-		add(movementSend, native, tx.Value(), target, "transaction.value")
+	nativeLogs, err := nativeTransferLogs(r, chainID)
+	if err != nil {
+		return nil, err
 	}
-	if tx.To() != nil && *tx.To() == owner {
-		add(movementReceive, native, tx.Value(), from, "transaction.value")
+	target := r.ContractAddress
+	if tx.To() != nil {
+		target = *tx.To()
+	}
+	if len(nativeLogs) != 0 && tx.Value().Sign() > 0 && from != target {
+		// EIP-7708 puts the top-level endowment before all execution logs.
+		first := nativeLogs[0]
+		if (target == (common.Address{}) && tx.To() == nil) || first != r.Logs[0] || first.Topics[1] != common.BytesToHash(from.Bytes()) || first.Topics[2] != common.BytesToHash(target.Bytes()) || new(big.Int).SetBytes(first.Data).Cmp(tx.Value()) != 0 {
+			return nil, ErrUnavailable
+		}
+	}
+	if len(nativeLogs) == 0 {
+		if from == owner {
+			add(movementSend, native, tx.Value(), target, "transaction.value")
+		}
+		if tx.To() != nil && *tx.To() == owner {
+			add(movementReceive, native, tx.Value(), from, "transaction.value")
+		}
 	}
 	ownerTopic := common.BytesToHash(owner.Bytes())
-	seen := map[uint]bool{}
 	for _, l := range r.Logs {
-		if l == nil || l.Removed || l.TxHash != r.TxHash || l.BlockHash != r.BlockHash || l.BlockNumber != r.BlockNumber.Uint64() {
-			return nil, ErrUnavailable
-		}
-		if seen[l.Index] {
-			return nil, ErrUnavailable
-		}
-		seen[l.Index] = true
 		if len(l.Data) != 32 {
 			continue
 		}
@@ -184,11 +252,15 @@ func receiptMovements(tx *types.Transaction, r *types.Receipt, from, owner commo
 			if !bytes.Equal(l.Topics[1][:12], zeroBytes12[:]) || !bytes.Equal(l.Topics[2][:12], zeroBytes12[:]) {
 				continue
 			}
+			asset := l.Address.Hex()
+			if IsNativeTransferEmitter(chainID, l.Address) {
+				asset, evidence = "ETH", evidence+":EIP-7708"
+			}
 			if l.Topics[1] == ownerTopic {
-				add(movementSend, l.Address.Hex(), amount, common.BytesToAddress(l.Topics[2].Bytes()), evidence)
+				add(movementSend, asset, amount, common.BytesToAddress(l.Topics[2].Bytes()), evidence)
 			}
 			if l.Topics[2] == ownerTopic {
-				add(movementReceive, l.Address.Hex(), amount, common.BytesToAddress(l.Topics[1].Bytes()), evidence)
+				add(movementReceive, asset, amount, common.BytesToAddress(l.Topics[1].Bytes()), evidence)
 			}
 		}
 		// WETH9 uses Deposit/Withdrawal rather than mint/burn Transfer events.
@@ -198,7 +270,9 @@ func receiptMovements(tx *types.Transaction, r *types.Receipt, from, owner commo
 			}
 			if l.Topics[0] == withdrawalTopic {
 				add(movementSend, l.Address.Hex(), amount, l.Address, evidence+":withdraw")
-				add(movementReceive, "ETH", amount, l.Address, evidence+":withdraw ETH")
+				if len(nativeLogs) == 0 {
+					add(movementReceive, "ETH", amount, l.Address, evidence+":withdraw ETH")
+				}
 			}
 		}
 	}

@@ -21,7 +21,7 @@
 - 建立、還原及管理本機錢包，支援加密備份。
 - 發送原生幣與代幣、預覽手續費，設定或撤銷 ERC-20 授權額度。
 - 在 Ethereum Sepolia 包裝／解包 WETH，透過 Uniswap V3 兌換 WETH 與測試 USDC。
-- 按交易收據整理 EVM 收支紀錄，支援 CSV 匯出。
+- EVM 收支紀錄及 CSV 匯出區分原生幣與 ERC-20 證據；詳見[支援範圍與限制](docs/wallet-reference.md#receive-and-account-for-test-assets)。
 
 ## 交易處理
 

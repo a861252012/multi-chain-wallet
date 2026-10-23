@@ -21,7 +21,7 @@ Build and test this project with **Go 1.26.10**. Follow the [local toolchain set
 - Create, restore and manage local wallets with encrypted backups.
 - Send native coins and tokens, preview fees, and set or revoke ERC-20 allowances.
 - Wrap and unwrap WETH, and swap WETH / test USDC through Uniswap V3 on Ethereum Sepolia.
-- Build EVM activity records from transaction receipts and export them as CSV.
+- Build EVM activity records and CSV exports that distinguish native-currency and ERC-20 evidence. See [supported evidence and limits](docs/wallet-reference.md#receive-and-account-for-test-assets).
 
 ## Transaction handling
 

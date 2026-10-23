@@ -58,14 +58,17 @@ func (c *Client) ScanFinalizedBlock(ctx context.Context, number uint64, owner co
 		}
 		related := tx.from == owner || (tx.to != nil && *tx.to == owner)
 		if r.Status == types.ReceiptStatusSuccessful {
+			if _, err := nativeTransferLogs(r, c.ChainID()); err != nil {
+				return nil, err
+			}
 			for _, l := range r.Logs {
-				if l == nil || l.Removed || l.BlockHash != domainBlock.hash || l.TxHash != tx.hash || l.BlockNumber != number {
-					return nil, ErrUnavailable
-				}
 				if len(l.Topics) != 3 || l.Topics[0] != transferTopic || len(l.Data) != 32 || (l.Topics[1] != ownerTopic && l.Topics[2] != ownerTopic) {
 					continue
 				}
 				related = true
+				if IsNativeTransferEmitter(c.ChainID(), l.Address) {
+					continue
+				}
 				if !tokens[l.Address] {
 					result.tokens = append(result.tokens, l.Address)
 					tokens[l.Address] = true
