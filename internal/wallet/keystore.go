@@ -8,6 +8,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -136,6 +137,19 @@ func (km *KeystoreManager) releaseScrypt() {
 	<-km.scryptSem
 }
 
+// Callers hold the scrypt admission gate. Collect each completed KDF's large
+// scratch allocation before the same manager's next KDF, including decrypt/encrypt
+// pairs in password changes and imports. The returned key remains live.
+func encryptKeystoreWithGC(key *keystore.Key, password string, n, p int) ([]byte, error) {
+	defer runtime.GC()
+	return keystore.EncryptKey(key, password, n, p)
+}
+
+func decryptKeystoreWithGC(data []byte, password string) (*keystore.Key, error) {
+	defer runtime.GC()
+	return keystore.DecryptKey(data, password)
+}
+
 // Exists returns true if the keystore file exists on disk.
 func (km *KeystoreManager) Exists() bool {
 	km.mu.Lock()
@@ -225,7 +239,7 @@ func (km *KeystoreManager) Create(password string) (*CreateResponse, error) {
 	if err := km.checkDuplicateAddress(addr); err != nil {
 		return nil, err
 	}
-	keyJSON, err := keystore.EncryptKey(key, password, km.scryptN, km.scryptP)
+	keyJSON, err := encryptKeystoreWithGC(key, password, km.scryptN, km.scryptP)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +303,7 @@ func (km *KeystoreManager) Import(mnemonic, password string) (*ImportResponse, e
 	if err := km.checkDuplicateAddress(addr); err != nil {
 		return nil, err
 	}
-	keyJSON, err := keystore.EncryptKey(key, password, km.scryptN, km.scryptP)
+	keyJSON, err := encryptKeystoreWithGC(key, password, km.scryptN, km.scryptP)
 	if err != nil {
 		return nil, err
 	}
@@ -322,7 +336,7 @@ func (km *KeystoreManager) Backup(password string) (json.RawMessage, error) {
 	}
 	defer km.releaseScrypt()
 
-	key, err := keystore.DecryptKey(data, password)
+	key, err := decryptKeystoreWithGC(data, password)
 	if err != nil {
 		return nil, ErrPasswordMismatch
 	}
@@ -377,7 +391,7 @@ func (km *KeystoreManager) ImportKeystore(data json.RawMessage, password, newPas
 		return nil, err
 	}
 	defer km.releaseScrypt()
-	key, err := keystore.DecryptKey(data, password)
+	key, err := decryptKeystoreWithGC(data, password)
 	if err != nil {
 		return nil, ErrPasswordMismatch
 	}
@@ -386,7 +400,7 @@ func (km *KeystoreManager) ImportKeystore(data json.RawMessage, password, newPas
 	if err := km.checkDuplicateAddress(key.Address); err != nil {
 		return nil, err
 	}
-	encrypted, err := keystore.EncryptKey(key, newPassword, km.scryptN, km.scryptP)
+	encrypted, err := encryptKeystoreWithGC(key, newPassword, km.scryptN, km.scryptP)
 	if err != nil {
 		return nil, err
 	}
@@ -410,12 +424,12 @@ func (km *KeystoreManager) ChangePassword(password, newPassword string) error {
 		return err
 	}
 	defer km.releaseScrypt()
-	key, err := keystore.DecryptKey(data, password)
+	key, err := decryptKeystoreWithGC(data, password)
 	if err != nil {
 		return ErrPasswordMismatch
 	}
 	defer wipePrivateKey(key.PrivateKey)
-	encrypted, err := keystore.EncryptKey(key, newPassword, km.scryptN, km.scryptP)
+	encrypted, err := encryptKeystoreWithGC(key, newPassword, km.scryptN, km.scryptP)
 	if err != nil {
 		return err
 	}
@@ -441,7 +455,7 @@ func (km *KeystoreManager) DecryptKey(password string) (*keystore.Key, error) {
 	}
 	defer km.releaseScrypt()
 
-	key, err := keystore.DecryptKey(data, password)
+	key, err := decryptKeystoreWithGC(data, password)
 	if err != nil {
 		return nil, ErrPasswordMismatch
 	}
