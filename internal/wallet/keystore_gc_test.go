@@ -80,10 +80,8 @@ func TestKeystoreCollectedKDFConcurrentCalls(t *testing.T) {
 	var wg sync.WaitGroup
 	results := make(chan error, 12)
 	start := make(chan struct{})
-	for i := 0; i < 12; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range 12 {
+		wg.Go(func() {
 			<-start
 			key, err := km.DecryptKey(password)
 			if err == nil {
@@ -93,7 +91,7 @@ func TestKeystoreCollectedKDFConcurrentCalls(t *testing.T) {
 				wipePrivateKey(key.PrivateKey)
 			}
 			results <- err
-		}()
+		})
 	}
 	close(start)
 	wg.Wait()
