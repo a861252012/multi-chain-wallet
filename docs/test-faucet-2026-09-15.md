@@ -68,3 +68,22 @@ ok  github.com/a861252012/multi-chain-wallet/internal/web 1.075s
 瀏覽器 mock 回歸也已通過領幣成功、SOL 未取得空投、TRON 庫存不足及既有錢包流程。Go Race Detector 結果僅涵蓋已執行的測試路徑，不代表沒有所有業務競態。
 
 另於容器重啟後再次按下 Sepolia 領幣按鈕，UI 顯示「本小時已有同額發放紀錄」，連結仍為 `0x600f2556487f3be85558e34e3abe51274e162912566bec78d129553f918f676e`，餘額維持 0.051 ETH。
+
+## Solana faucet 診斷紀錄（2026-10-25）
+
+通過本機來源／CSRF 檢查的 Solana faucet 請求由伺服器產生 UUID，
+回傳於 X-Request-ID，並串接 received、服務失敗階段、上游呼叫開始、
+submitted 或 result_unknown、HTTP response 狀態與耗時。submitted 僅代表取得
+signature，不代表 finalized；上游呼叫開始亦不代表上游確實收到或執行。
+驗證來源／CSRF 前被拒絕的請求不在這組紀錄內。
+
+紀錄使用標準 slog 輸出，可由容器 stderr 收集。上游只記 HTTP status、
+RPC code、錯誤類型／分類，不記原始錯誤文字、body、RPC data、端點 URL、
+請求標頭、私鑰、助記詞或憑證，避免服務回應反射敏感資料。
+前置失敗的 airdrop_attempted=false 代表尚未呼叫 RequestAirdrop；
+呼叫後錯誤一律維持 unknown，不自動重試。
+response 事件是 handler 選擇的狀態，不證明代理或用戶端收到回應。
+
+以 TestSolanaFaucetDiagnosticStages 的本機 HTTP fixture 驗證錯網路、
+HTTP 502、RPC 錯誤、逾時、成功回傳及敏感字串不進 log。
+這些模擬不能還原 2026-10-24 的 13r2，也不解除其 unknown 或既有鎖。
