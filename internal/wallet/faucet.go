@@ -178,7 +178,19 @@ func (f *TestFaucet) Claim(ctx context.Context, chainID int64, asset, address st
 	return source.Send(ctx, quote.ID, f.Password)
 }
 
-func (s *SolanaService) RequestTestSOL(ctx context.Context) (*SolanaAirdropResponse, error) {
+func (s *SolanaService) RequestTestSOL(ctx context.Context) (response *SolanaAirdropResponse, resultErr error) {
+	logger := faucetLogger(ctx)
+	started := time.Now()
+	stage := "wallet_status"
+	attempted := false
+	defer func() {
+		if resultErr != nil {
+			fields := []any{"stage", stage, "airdrop_attempted", attempted, "duration_ms", time.Since(started).Milliseconds()}
+			fields = append(fields, faucetErrorFields(resultErr)...)
+			logger.WarnContext(ctx, "solana_faucet_failed", fields...)
+		}
+	}()
+
 	status, err := s.Status()
 	if err != nil {
 		return nil, err
@@ -187,16 +199,23 @@ func (s *SolanaService) RequestTestSOL(ctx context.Context) (*SolanaAirdropRespo
 	if address == "" {
 		return nil, ErrWalletNotFound
 	}
+	stage = "network_check"
 	if err := s.check(ctx); err != nil {
 		return nil, err
 	}
+	stage = "public_key"
 	key, err := sol.PublicKeyFromBase58(address)
 	if err != nil {
 		return nil, err
 	}
+	stage = "request_airdrop"
+	attempted = true
+	logger.InfoContext(ctx, "solana_airdrop_call_started", "amount_lamports", 10000000)
 	signature, err := s.rpc.RequestAirdrop(ctx, key, 10000000, "confirmed")
 	if err != nil {
-		return nil, errors.New("Devnet 空投未能確認：可能限流、庫存不足或連線逾時。請先查詢餘額，稍後再試或使用外部水龍頭")
+		logger.WarnContext(ctx, "solana_airdrop_result_unknown", faucetErrorFields(err)...)
+		return nil, errors.New("Devnet 空投結果未知，請先查核交易與餘額，勿直接重複申請")
 	}
+	logger.InfoContext(ctx, "solana_airdrop_submitted", "signature", signature.String(), "duration_ms", time.Since(started).Milliseconds())
 	return &SolanaAirdropResponse{Signature: signature.String(), State: "submitted", Amount: "0.01"}, nil
 }

@@ -1,7 +1,9 @@
 package web
 
 import (
+	"bytes"
 	"github.com/a861252012/multi-chain-wallet/internal/wallet"
+	"log/slog"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -29,5 +31,36 @@ func TestFaucetRejectsForeignAndUnboundedRequests(t *testing.T) {
 				t.Fatalf("%s %d %s", path, w.Code, w.Body.String())
 			}
 		}
+	}
+}
+
+func TestSolanaFaucetLogsRequestCorrelation(t *testing.T) {
+	var logs bytes.Buffer
+	previous := slog.Default()
+	slog.SetDefault(slog.New(slog.NewJSONHandler(&logs, nil)))
+	defer slog.SetDefault(previous)
+	service, err := wallet.NewSolanaService("http://127.0.0.1:1", t.TempDir(), 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer service.Close()
+	h := NewFaucet(&wallet.TestFaucet{}, service, "fixture")
+	for i, expected := range []int{502, 429} {
+		r := httptest.NewRequest("POST", "http://localhost/api/faucet/solana", strings.NewReader("{}"))
+		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("X-Wallet-CSRF", "fixture")
+		r.Header.Set("X-Request-ID", "untrusted-client-value")
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		id := w.Header().Get("X-Request-ID")
+		if w.Code != expected || id == "" || id == "untrusted-client-value" {
+			t.Fatalf("%d: status %d id %q", i, w.Code, id)
+		}
+		if !strings.Contains(logs.String(), id) || !strings.Contains(logs.String(), "solana_faucet_response") {
+			t.Fatal(logs.String())
+		}
+	}
+	if !strings.Contains(logs.String(), "wallet_status") || strings.Contains(logs.String(), "solana_airdrop_call_started") {
+		t.Fatal(logs.String())
 	}
 }

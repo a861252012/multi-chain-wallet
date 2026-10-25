@@ -3,11 +3,13 @@ package web
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/a861252012/multi-chain-wallet/internal/wallet"
+	"github.com/google/uuid"
 )
 
 func NewFaucet(faucet *wallet.TestFaucet, solana *wallet.SolanaService, csrf string) http.Handler {
@@ -72,14 +74,27 @@ func NewFaucet(faucet *wallet.TestFaucet, solana *wallet.SolanaService, csrf str
 		respondWallet(w, 200, newEVMSendResponse(result), nil)
 	}))
 	mux.HandleFunc("POST /api/faucet/solana", localWalletFilter(csrf, func(w http.ResponseWriter, r *http.Request) {
+		requestID := uuid.NewString()
+		logger := slog.Default().With("component", "solana_faucet", "request_id", requestID)
+		r = r.WithContext(wallet.WithFaucetLogger(r.Context(), logger))
+		w.Header().Set("X-Request-ID", requestID)
+		started := time.Now()
+		responseStatus := http.StatusInternalServerError
+		logger.InfoContext(r.Context(), "solana_faucet_received")
+		defer func() {
+			logger.InfoContext(r.Context(), "solana_faucet_response", "http_status", responseStatus, "duration_ms", time.Since(started).Milliseconds())
+		}()
+
 		var req struct{}
 		if err := decodeStrictJSON(w, r, &req); err != nil {
+			responseStatus = 400
 			respondWallet(w, 400, nil, err)
 			return
 		}
 		solMu.Lock()
 		if time.Since(lastSOL) < time.Minute {
 			solMu.Unlock()
+			responseStatus = 429
 			respondWallet(w, 429, nil, errors.New("請至少等待一分鐘再申請 Devnet 空投"))
 			return
 		}
@@ -89,9 +104,11 @@ func NewFaucet(faucet *wallet.TestFaucet, solana *wallet.SolanaService, csrf str
 		defer cancel()
 		result, err := solana.RequestTestSOL(ctx)
 		if err != nil {
+			responseStatus = 502
 			respondWallet(w, 502, nil, err)
 			return
 		}
+		responseStatus = 200
 		respondWallet(w, 200, newSolanaAirdropResponse(result), nil)
 	}))
 	return secureHeaders(mux)
