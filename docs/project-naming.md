@@ -32,6 +32,8 @@ Read back the deployed `X-App-Version`, wallet state and browser behavior before
 
 After stopping the old app and before replacing its container, deployment saves the last 1,000 application log lines, with timestamps, to a new private `container-<container-id>.*.log` file in `/opt/multi-chain-wallet`. Reading container logs has a 60-second limit; Compose container lookup and inspection are outside that timeout. A capture failure aborts the update and restores the previous image; partial output is retained. Rollback also tries to save the failed container's logs before replacing it, but a logging failure must not block recovery. These files are diagnostic snapshots, not full log archives; retain incident evidence and remove unneeded snapshots during operator maintenance.
 
+Notification rejection tests freeze the clock while signing and handling requests, so the ±301-second cases cannot cross into the accepted ±300-second window during the test.
+
 ## Encrypted VM backup and restore
 
 After the new installation is running, `scripts/deploy/backup-to-mac.sh VM_IPV4` runs from the owner's Mac over the reviewed SSH route. It briefly stops the exact `multi-chain-wallet-demo-app-1` container under the deployment lock, archives its actual wallet bind with the new configuration, and restarts it even if archiving fails. The script accepts only one writable `/data/wallet` bind at `/opt/testnet-wallet-lab/wallet` or `/opt/multi-chain-wallet/wallet`, with no symlink path or nested mounts. It does not back up an old container before migration; use the separately reviewed old-installation backup procedure for that stage.

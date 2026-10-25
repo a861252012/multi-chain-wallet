@@ -141,19 +141,20 @@ class NotifyTests(unittest.TestCase):
         self.assertTrue(self.trigger.exists())
 
     def test_invalid_requests_never_queue(self):
-        cases = [
-            {'method': 'GET'},
-            {'path': '/wrong'},
-            {'revision': b'x' * 41},
-            {'revision': b'not-a-commit'},
-            {'stamp': str(int(time.time()) - 301)},
-            {'stamp': str(int(time.time()) + 301)},
-            {'signature': 'sha256=' + '0' * 64},
-        ]
-        for case in cases:
-            with self.subTest(case=case):
-                self.assertNotEqual(self.request(**case), 202)
-                self.assertFalse(self.trigger.exists())
+        with patch.object(notify.time, 'time', return_value=1_700_000_000):
+            cases = [
+                {'method': 'GET'},
+                {'path': '/wrong'},
+                {'revision': b'x' * 41},
+                {'revision': b'not-a-commit'},
+                {'stamp': str(int(time.time()) - 301)},
+                {'stamp': str(int(time.time()) + 301)},
+                {'signature': 'sha256=' + '0' * 64},
+            ]
+            for case in cases:
+                with self.subTest(case=case):
+                    self.assertNotEqual(self.request(**case), 202)
+                    self.assertFalse(self.trigger.exists())
 
     def test_receiver_failure_does_not_acknowledge_event(self):
         with patch.object(notify.os, 'open', side_effect=OSError('disk full')):
