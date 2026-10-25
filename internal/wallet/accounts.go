@@ -66,12 +66,20 @@ func (s *Service) listAccounts() ([]AccountInfo, error) {
 		if !entry.IsDir() || parseErr != nil {
 			continue
 		}
-		km := NewKeystoreManager(filepath.Join(s.walletDir, "accounts", string(id)), 0, 0)
+		dir := filepath.Join(s.walletDir, "accounts", string(id))
+		// Creation publishes account.json last; retain but skip interrupted accounts.
+		if _, err := os.Stat(filepath.Join(dir, "account.json")); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return nil, err
+		}
+		km := NewKeystoreManager(dir, 0, 0)
 		addr, err := km.Address()
 		if err != nil && !errors.Is(err, ErrWalletNotFound) {
 			return nil, err
 		}
-		metadata, err := readAccountMetadata(filepath.Join(s.walletDir, "accounts", string(id)))
+		metadata, err := readAccountMetadata(dir)
 		if err != nil {
 			return nil, err
 		}

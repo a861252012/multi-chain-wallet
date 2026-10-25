@@ -153,6 +153,63 @@ const server = http.createServer(async (req,res)=>{
   await fs.mkdir(screenshotRoot,{recursive:true});
   const screenshots = await fs.mkdtemp(path.join(screenshotRoot,'multi-chain-wallet-browser-'));
   console.log('Browser screenshots: '+screenshots);
+  // Two tabs share address-book storage; saving in one must not erase the other.
+  const multiTab = await browser.newContext();
+  await multiTab.route('**/*', route => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
+  const tabs = await Promise.all([multiTab.newPage(), multiTab.newPage()]);
+  const otherAddress = '0x2222222222222222222222222222222222222222';
+  try {
+    await Promise.all(tabs.map(tab => tab.goto(base + '/#contacts-panel')));
+    for (const [index, tab] of tabs.entries()) {
+      await tab.locator('#contact-label').fill(index ? 'Bob' : 'Alice');
+      await tab.locator('#contact-address').fill(index ? otherAddress : address);
+    }
+    await Promise.all(tabs.map(tab => tab.locator('#contact-form button').click()));
+    await tabs[0].waitForFunction(() => document.querySelectorAll('#contacts-list strong').length === 2);
+    await tabs[1].waitForFunction(() => document.querySelectorAll('#contacts-list strong').length === 2);
+    assert.deepEqual((await tabs[0].locator('#contacts-list strong').allTextContents()).sort(), ['Alice', 'Bob']);
+    await tabs[0].locator('#contacts-list article').filter({hasText:'Alice'}).getByRole('button', {name:'移除',exact:true}).click();
+    await tabs[1].waitForFunction(() => document.querySelectorAll('#contacts-list strong').length === 1);
+    assert.equal(await tabs[1].locator('#contacts-list strong').textContent(), 'Bob');
+    await tabs[0].locator('#undo-contact').click();
+    await tabs[1].waitForFunction(() => document.querySelectorAll('#contacts-list strong').length === 2);
+    for (const [index, tab] of tabs.entries()) {
+      await tab.evaluate(() => { location.hash = 'watch-panel'; });
+      await tab.locator('#watch-address').fill(index ? otherAddress : address);
+    }
+    await Promise.all(tabs.map(tab => tab.locator('#watch-save').click()));
+    for (const tab of tabs) await tab.waitForFunction(() => document.querySelectorAll('#watch-saved .contact-row').length === 2);
+    await tabs[0].locator('#watch-saved .contact-row').filter({hasText:address}).getByRole('button', {name:'移除',exact:true}).click();
+    await tabs[1].waitForFunction(() => document.querySelectorAll('#watch-saved .contact-row').length === 1);
+    assert.ok((await tabs[1].locator('#watch-saved').textContent()).includes(otherAddress));
+  } finally { await multiTab.close(); }
+  console.log('PASS: two tabs keep concurrent contact and watch edits, removals and undo.');
+  const noLocks = await browser.newContext();
+  await noLocks.route('**/*', route => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
+  await noLocks.addInitScript(() => Object.defineProperty(navigator, 'locks', {value:undefined}));
+  try {
+    const tab = await noLocks.newPage();
+    await tab.goto(base + '/#contacts-panel');
+    await tab.locator('#contact-label').fill('Not saved');
+    await tab.locator('#contact-address').fill(address);
+    await tab.locator('#contact-form button').click();
+    await tab.waitForFunction(() => document.querySelector('#contacts-feedback').textContent.includes('不支援安全的跨分頁儲存'));
+    assert.equal(await tab.locator('#contacts-list strong').count(), 0);
+    await tab.evaluate(() => { location.hash = 'watch-panel'; });
+    await tab.locator('#watch-address').fill(address);
+    await tab.locator('#watch-save').click();
+    await tab.waitForFunction(() => document.querySelector('#watch-result').textContent.includes('不支援安全的跨分頁儲存'));
+    assert.equal(await tab.evaluate(() => Object.keys(localStorage).some(key => key.includes(':contacts:') || key.includes(':watches:'))), false);
+    for (const [locale, message] of [
+      ['en', 'This browser cannot save safely across tabs. Your changes were not saved.'],
+      ['zh-CN', '浏览器不支持安全的跨标签页存储，未保存更改。'],
+    ]) {
+      await tab.locator('#language-select').selectOption(locale);
+      await tab.waitForFunction(message => ['contacts-feedback', 'watch-result'].every(id => document.getElementById(id).textContent === message), message);
+    }
+  } finally { await noLocks.close(); }
+  console.log('PASS: browsers without Web Locks reject local-list edits without writing, with English and Simplified Chinese messages.');
+
   const publicRequests = [];
   const trackPublic = req => publicRequests.push(new URL(req.url()).pathname);
   page.on('request', trackPublic);
@@ -381,14 +438,16 @@ const server = http.createServer(async (req,res)=>{
   await page.locator('#save-recipient').click();
   await page.locator('#contact-label').fill('UX 測試聯絡人');
   await page.locator('#contact-form button').click();
+  await page.waitForFunction(() => document.querySelector('#contacts-list strong')?.textContent === 'UX 測試聯絡人');
   await page.locator('#contacts-search').fill('不符合');assert.equal(await page.locator('#contacts-list strong').count(),0);
   await page.locator('#contacts-search').fill('UX');
   await page.locator('#contacts-list button').filter({hasText:'編輯名稱'}).click();
   await page.locator('#contact-label').fill('UX 已改名');await page.locator('#contact-form button').click();
+  await page.waitForFunction(() => document.querySelector('#contacts-list strong')?.textContent === 'UX 已改名');
   assert.equal(await page.locator('#contacts-list strong').textContent(),'UX 已改名');
   await page.screenshot({path:path.join(screenshots,'wallet-ux-contacts.png'),fullPage:true});
-  await page.locator('#contacts-list button').filter({hasText:'移除'}).click();assert.equal(await page.locator('#contacts-list strong').count(),0);
-  await page.locator('#undo-contact').click();assert.equal(await page.locator('#contacts-list strong').textContent(),'UX 已改名');
+  await page.locator('#contacts-list button').filter({hasText:'移除'}).click();await page.waitForFunction(() => document.querySelectorAll('#contacts-list strong').length === 0);assert.equal(await page.locator('#contacts-list strong').count(),0);
+  await page.locator('#undo-contact').click();await page.waitForFunction(() => document.querySelector('#contacts-list strong')?.textContent === 'UX 已改名');assert.equal(await page.locator('#contacts-list strong').textContent(),'UX 已改名');
   await page.locator('#contacts-list button').filter({hasText:'發送資產'}).click();
   assert.equal(await page.locator('#send-to').inputValue(),address);
   await page.reload();await view('contacts-panel');assert.equal(await page.locator('#contacts-list strong').textContent(),'UX 已改名');
@@ -398,6 +457,7 @@ const server = http.createServer(async (req,res)=>{
     await page.locator('#contact-label').fill('Chain contact');await page.locator('#contact-address').fill(address);await page.locator('#contact-form button').click();
     assert.equal(await page.locator('#contacts-list strong').count(),0,'EVM address rejected on another family');
     await page.locator('#contact-address').fill(value);await page.locator('#contact-form button').click();
+    await page.waitForFunction(() => document.querySelector('#contacts-list strong')?.textContent === 'Chain contact');
     assert.equal(await page.locator('#contacts-list strong').textContent(),'Chain contact');
     await page.locator('#contacts-list button').filter({hasText:'發送資產'}).click();
     assert.equal(await page.locator('#'+recipientID).inputValue(),value);
@@ -457,6 +517,7 @@ const server = http.createServer(async (req,res)=>{
   await page.waitForFunction(()=>document.querySelector('#test-funding-status').textContent.includes('鏈上執行成功'));
   assert.ok((await page.locator('#test-funding-status a').getAttribute('href')).endsWith('f'.repeat(64)));
   await view('contacts-panel');await page.locator('#contact-label').fill('<img src=x onerror=alert(1)>');await page.locator('#contact-address').fill(address);await page.locator('#contact-form button').click();
+  await page.waitForFunction(() => document.querySelector('#contacts-list strong')?.textContent === '<img src=x onerror=alert(1)>');
   assert.equal(await page.locator('#contacts-list img').count(),0);
   await view('send-panel');await page.locator('#contact-select').selectOption(address);assert.equal(await page.locator('#send-to').inputValue(),address);
   await require('./history-freshness.cjs')(context, base);
@@ -697,7 +758,7 @@ const server = http.createServer(async (req,res)=>{
   const evidenceText=await page.locator('#verified-evidence').textContent();assert.ok(!/[\u3400-\u9fff]/.test(evidenceText),'English evidence and limitations');
   assert.deepEqual(untranslated,[],'untranslated English UI messages');
   assert.equal(await page.evaluate(()=>window.FlowI18n.t('__proto__')),'__proto__');
-  await page.goto(base);await view('contacts-panel');await page.locator('#contact-label').fill('總覽');await page.locator('#contact-address').fill(address);await page.locator('#contact-form button').click();assert.equal(await page.locator('#contacts-list strong').textContent(),'總覽');
+  await page.goto(base);await view('contacts-panel');await page.locator('#contact-label').fill('總覽');await page.locator('#contact-address').fill(address);await page.locator('#contact-form button').click();await page.waitForFunction(() => document.querySelector('#contacts-list strong')?.textContent === '總覽');assert.equal(await page.locator('#contacts-list strong').textContent(),'總覽');
   await page.locator('#language-select').selectOption('zh-CN');assert.equal(await page.locator('#contacts-list strong').textContent(),'總覽');
   // Reflow and theme checks use the same API fixtures as the interaction tests.
   for (const family of ['', 'solana/', 'tron/']) {

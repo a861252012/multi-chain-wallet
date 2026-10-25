@@ -26,6 +26,12 @@ For an existing VM whose wallet is physically stored at `/opt/testnet-wallet-lab
 
 Read back the deployed `X-App-Version`, wallet state and browser behavior before resuming the timer and notifications, including `DEMO_NOTIFY_ENABLED`. A passing source/build test does not establish that this VM transition occurred.
 
+## Routine image updates
+
+`deploy.sh` checks current `main` before pulling and again immediately before stopping the app. If `main` moved during the pull, it exits without replacing the running container. This check is a point-in-time guard; it does not lock GitHub against a later push.
+
+After stopping the old app and before replacing its container, deployment saves the last 1,000 application log lines, with timestamps, to a new private `container-<container-id>.*.log` file in `/opt/multi-chain-wallet`. Reading container logs has a 60-second limit; Compose container lookup and inspection are outside that timeout. A capture failure aborts the update and restores the previous image; partial output is retained. Rollback also tries to save the failed container's logs before replacing it, but a logging failure must not block recovery. These files are diagnostic snapshots, not full log archives; retain incident evidence and remove unneeded snapshots during operator maintenance.
+
 ## Encrypted VM backup and restore
 
 After the new installation is running, `scripts/deploy/backup-to-mac.sh VM_IPV4` runs from the owner's Mac over the reviewed SSH route. It briefly stops the exact `multi-chain-wallet-demo-app-1` container under the deployment lock, archives its actual wallet bind with the new configuration, and restarts it even if archiving fails. The script accepts only one writable `/data/wallet` bind at `/opt/testnet-wallet-lab/wallet` or `/opt/multi-chain-wallet/wallet`, with no symlink path or nested mounts. It does not back up an old container before migration; use the separately reviewed old-installation backup procedure for that stage.

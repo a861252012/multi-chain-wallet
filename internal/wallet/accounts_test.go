@@ -2,8 +2,10 @@ package wallet
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/a861252012/multi-chain-wallet/internal/chain"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -196,5 +198,102 @@ func TestNamedAccountCreatedWithPassword(t *testing.T) {
 	list, err := root.Accounts()
 	if err != nil || len(list) != 2 || list[1].Name != added.Name || list[1].Address != added.Address {
 		t.Fatal("name/address not persisted", err)
+	}
+}
+
+func TestAccountListAfterInterruptedCreation(t *testing.T) {
+	for _, withKey := range []bool{false, true} {
+		t.Run(fmt.Sprint("key=", withKey), func(t *testing.T) {
+			client, err := chain.New("http://127.0.0.1:1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer client.Close()
+			dir := t.TempDir()
+			root, err := NewService(client, dir, 2, 1)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer root.Close()
+			published, err := root.AddAccount("registered slot", "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			id := strings.Repeat("a", 32)
+			orphan := filepath.Join(dir, "accounts", id)
+			if err := os.MkdirAll(orphan, 0700); err != nil {
+				t.Fatal(err)
+			}
+			var keyBefore []byte
+			if withKey {
+				keys := NewKeystoreManager(orphan, 2, 1)
+				if _, err := keys.Create("test-password-123"); err != nil {
+					t.Fatal(err)
+				}
+				keyBefore, err = os.ReadFile(filepath.Join(orphan, "keystore.json"))
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			// A crash can leave the directory and key before account.json is published.
+			if err := root.Close(); err != nil {
+				t.Fatal(err)
+			}
+			reopened, err := NewService(client, dir, 2, 1)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer reopened.Close()
+			accounts, err := reopened.Accounts()
+			if err != nil || len(accounts) != 2 || accounts[1].ID != published.ID {
+				t.Fatalf("unpublished account entered startup list: %+v, %v", accounts, err)
+			}
+			child, err := NewAccountService(client, reopened, accounts[1].ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer child.Close()
+			if _, err := NewAccountService(client, reopened, id); err == nil {
+				t.Fatal("unpublished account can be loaded directly")
+			}
+			if _, err := os.Stat(orphan); err != nil {
+				t.Fatal("orphan directory removed", err)
+			}
+			if withKey {
+				keyAfter, err := os.ReadFile(filepath.Join(orphan, "keystore.json"))
+				if err != nil || !bytes.Equal(keyBefore, keyAfter) {
+					t.Fatal("orphan key changed", err)
+				}
+			}
+		})
+	}
+}
+
+func TestAccountListDoesNotHideMetadataErrors(t *testing.T) {
+	client, err := chain.New("http://127.0.0.1:1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+	root, err := NewService(client, t.TempDir(), 2, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer root.Close()
+	path := filepath.Join(root.walletDir, "accounts", strings.Repeat("b", 32), "account.json")
+	if err := os.MkdirAll(path, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := root.Accounts(); err == nil {
+		t.Fatal("metadata read error ignored")
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("{"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := root.Accounts(); err == nil {
+		t.Fatal("malformed metadata ignored")
 	}
 }

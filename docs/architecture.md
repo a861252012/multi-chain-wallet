@@ -62,7 +62,9 @@ EVM wallets have local names (1–40 characters) and an archive flag stored in
 `account.json`, separately from encrypted keys and transaction journals. The
 wallet manager supports adding a named setup slot, completing creation/import,
 renaming, archiving and restoring. Cancelling the name form creates no slot.
-An unfinished slot remains available as “Continue setup”.
+An unfinished registered slot remains available as “Continue setup”. A directory
+left by interrupted creation before `account.json` is written is not registered;
+startup skips it and retains its files for manual recovery.
 
 Archiving hides a wallet from the normal switcher; it does not erase keys,
 remove on-chain assets, revoke signing access or stop background maintenance.

@@ -1,11 +1,26 @@
 'use strict';
 (() => {
   const watchesKey = 'multi-chain-wallet:watches:' + networkID;
-  function stored(name) {
-    try { const value = JSON.parse(localStorage.getItem(name) || '[]'); return Array.isArray(value) ? value.filter(item => item && /^0x[0-9a-fA-F]{40}$/.test(item.address) && typeof item.label === 'string').slice(0,100) : []; }
-    catch { return []; }
+  function stored() {
+    const value = JSON.parse(localStorage.getItem(watchesKey) || '[]');
+    return Array.isArray(value) ? value.filter(item => item && /^0x[0-9a-fA-F]{40}$/.test(item.address) && typeof item.label === 'string').slice(0,100) : [];
   }
-  let watches = stored(watchesKey);
+  let watches = [];
+  try { watches = stored(); } catch { /* A blocked or empty store starts with an empty list. */ }
+  async function saveWatches(change) {
+    if (!navigator.locks) throw new Error('瀏覽器不支援安全的跨分頁儲存，未儲存變更。');
+    await navigator.locks.request(watchesKey, () => {
+      const next = change(stored());
+      localStorage.setItem(watchesKey, JSON.stringify(next));
+      watches = next;
+      renderWatches();
+    });
+  }
+  window.addEventListener('storage', event => {
+    if (event.storageArea !== localStorage || (event.key !== watchesKey && event.key !== null)) return;
+    try { watches = stored(); renderWatches(); }
+    catch { $('watch-result').textContent = '無法儲存變更。'; }
+  });
   let watchQuery = 0;
   let assetQuery = 0;
   function invalidateAssets() {
@@ -29,16 +44,23 @@
       const row = node('div','','contact-row'), select = node('button',item.address,'secondary'), remove = node('button','移除','secondary');
       select.type = remove.type = 'button';
       select.addEventListener('click',()=>{ invalidateWatch(); invalidateAssets(); $('watch-address').value=item.address; $('watch-form').requestSubmit(); });
-      remove.addEventListener('click',()=>{
-        try { const next=watches.filter(w=>w.address!==item.address); localStorage.setItem(watchesKey,JSON.stringify(next));watches=next;renderWatches(); }
-        catch { $('watch-result').textContent='無法儲存變更。'; }
+      remove.addEventListener('click',async()=>{
+        try { await saveWatches(current => current.filter(w=>w.address!==item.address)); }
+        catch(error) { $('watch-result').textContent=errorMessage(error); }
       });
       row.append(select,remove);$('watch-saved').append(row);
     }
   }
   renderWatches();
-  $('watch-save').addEventListener('click',()=>{
-    try { const value=address('watch-address');const next=watches.filter(w=>w.address.toLowerCase()!==value.toLowerCase()); if(next.length>=20)throw new Error('最多 20 個觀察地址。');next.push({address:value,label:''});localStorage.setItem(watchesKey,JSON.stringify(next));watches=next;renderWatches(); }
+  $('watch-save').addEventListener('click',async()=>{
+    try {
+      const value=address('watch-address');
+      await saveWatches(current => {
+        const next=current.filter(w=>w.address.toLowerCase()!==value.toLowerCase());
+        if(next.length>=20)throw new Error('最多 20 個觀察地址。');
+        return [...next,{address:value,label:''}];
+      });
+    }
     catch(error){$('watch-result').textContent=errorMessage(error);}
   });
   $('watch-form').addEventListener('submit', async event => {

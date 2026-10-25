@@ -12,8 +12,11 @@ cd "$base"
 exec 9>deploy.lock
 flock -w 180 9
 # Query inside the deployment lock; a slower old CI run must not overwrite main.
-head=$(curl --fail --silent --show-error --max-time 20 -H 'Cache-Control: no-cache' https://api.github.com/repos/a861252012/multi-chain-wallet/commits/main | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')
-[[ "$head" == "$revision" ]] || { echo 'Refusing stale commit; main has moved' >&2; exit 1; }
+check_main() {
+  head=$(curl --fail --silent --show-error --max-time 20 -H 'Cache-Control: no-cache' https://api.github.com/repos/a861252012/multi-chain-wallet/commits/main | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')
+  [[ "$head" == "$revision" ]] || { echo 'Refusing stale commit; main has moved' >&2; exit 1; }
+}
+check_main
 # A tag and an OCI revision label are attacker-controlled registry metadata.
 # Verify the exact digest, workflow identity and source commit before any pull/stop.
 TUF_ROOT="$base/.sigstore" /usr/local/bin/cosign verify \
@@ -39,6 +42,16 @@ verify() {
   [[ -n "$container" ]] || return 1
   python3 "$base/verify-demo.py" "$container" "$2"
 }
+capture_logs() {
+  local container id destination
+  container=$(compose "$1" ps -aq app) || return 1
+  [[ -n "$container" ]] || return 0
+  id=$(docker inspect --format '{{.Id}}' "$container") || return 1
+  [[ "$id" =~ ^[a-f0-9]{64}$ ]] || return 1
+  destination=$(mktemp "$base/container-${id}.XXXXXX.log") || return 1
+  # Keep partial output on failure; never delay recovery indefinitely for logs.
+  timeout --signal=KILL 60 docker logs --timestamps --tail 1000 "$id" >"$destination" 2>&1
+}
 # Preflight must succeed before stopping the running application.
 compose "$image" config --quiet
 rollback() {
@@ -46,6 +59,7 @@ rollback() {
   trap - EXIT
   if [[ $result != 0 ]]; then
     echo 'Deployment failed; retaining wallet/journal data' >&2
+    capture_logs "$image" || echo 'Could not preserve failed container logs; continuing recovery' >&2
     if [[ -n "$previous" ]]; then
       local old_revision
       old_revision=$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$previous")
@@ -61,9 +75,13 @@ rollback() {
   fi
   exit "$result"
 }
+# Failure here leaves the current app untouched and must not invoke rollback.
+command -v timeout >/dev/null
+check_main
 trap rollback EXIT
 # flock in the wallet requires stop-before-start. Never run compose down -v.
 compose "$image" stop app
+if [[ -n "$previous" ]]; then capture_logs "$previous"; fi
 compose "$image" up -d --no-build --pull never --wait --wait-timeout 90
 verify "$image" "$revision"
 printf '%s\n' "$image" > current-image.new

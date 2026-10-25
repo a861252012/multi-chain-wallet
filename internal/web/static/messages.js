@@ -1,6 +1,7 @@
 'use strict';
 // Source-message catalog: English and Simplified Chinese. Traditional Chinese is the source.
 window.FlowMessages = {
+  "瀏覽器不支援安全的跨分頁儲存，未儲存變更。": ["This browser cannot save safely across tabs. Your changes were not saved.", "浏览器不支持安全的跨标签页存储，未保存更改。"],
   "原交易結果無法確認": ["Original transaction outcome unknown", "原交易结果无法确认"],
   "原交易結果無法確認；該 nonce 已在 finalized 狀態被消耗，目前可建立新交易。請先核對原付款，避免重複支付。": ["The original transaction outcome is unknown. Its nonce has been consumed in finalized state, so a new transaction can now be created. Check the original payment first to avoid paying twice.", "原交易结果无法确认；该 nonce 已在 finalized 状态被消耗，目前可创建新交易。请先核对原付款，避免重复支付。"],
   "原交易結果無法確認；該 nonce 已在 finalized 狀態被消耗。請先核對原付款，避免重複支付。": ["The original transaction outcome is unknown. Its nonce has been consumed in finalized state. Check the original payment first to avoid paying twice.", "原交易结果无法确认；该 nonce 已在 finalized 状态被消耗。请先核对原付款，避免重复支付。"],

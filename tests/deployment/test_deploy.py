@@ -1,5 +1,6 @@
 import json
 import os
+import stat
 from pathlib import Path
 import shlex
 import subprocess
@@ -31,13 +32,18 @@ class DeployTests(unittest.TestCase):
         (self.base / "compose.demo.yaml").write_text("services: {}\n")
         (self.base / "verify-demo.py").write_text('import os,sys\nfrom pathlib import Path\nactive=Path(os.environ["FIXTURE"]+"/active").read_text()\nsys.exit(1 if os.getenv("FAIL_SMOKE") and "'+ DIGEST +'" in active else 0)\n')
         fake = '''#!/usr/bin/env python3
-import json,os,sys
+import json,os,sys,subprocess
 from pathlib import Path
 base=Path(os.environ["FIXTURE"])
 command=Path(sys.argv[0]).name
 args=sys.argv[1:]
 with (base/"calls").open("a") as f: f.write(json.dumps([command,args,os.getenv("APP_IMAGE","")])+"\\n")
-if command=="curl": print(json.dumps({"sha":os.environ["FIXTURE_MAIN"]}))
+if command=="timeout":
+ assert args[:2]==["--signal=KILL", "60"]
+ sys.exit(subprocess.run(args[2:], timeout=60).returncode)
+if command=="curl":
+ if os.getenv("FAIL_MAIN_AFTER_PULL") and (base/"pulled").exists(): sys.exit(22)
+ print(json.dumps({"sha":(base/"moved-main").read_text() if (base/"moved-main").exists() else os.environ["FIXTURE_MAIN"]}))
 if command=="cosign":
  if os.environ.get("TUF_ROOT") != str(base/".sigstore"): sys.exit(2)
  expected={"--certificate-identity":"https://github.com/a861252012/multi-chain-wallet/.github/workflows/verify.yml@refs/heads/main", "--certificate-oidc-issuer":"https://token.actions.githubusercontent.com", "--certificate-github-workflow-repository":"a861252012/multi-chain-wallet", "--certificate-github-workflow-ref":"refs/heads/main", "--certificate-github-workflow-trigger":"push", "--certificate-github-workflow-sha":os.environ["FIXTURE_MAIN"]}
@@ -45,6 +51,12 @@ if command=="cosign":
  if args[-1]!="ghcr.io/a861252012/multi-chain-wallet@sha256:"+"b"*64: sys.exit(2)
  if os.getenv("BAD_SIGNATURE"): sys.exit(1)
 if command=="docker":
+ if args[0]=="pull": (base/"pulled").touch()
+ if args[0]=="pull" and os.getenv("MOVE_MAIN"): (base/"moved-main").write_text("f"*40)
+ if args[0]=="inspect": print("2"*64 if (base/"active").exists() else "1"*64)
+ if args[0]=="logs":
+  print("failed-release" if args[-1]=="2"*64 else "previous-release", file=sys.stderr)
+  if os.getenv("FAIL_LOGS") or (os.getenv("FAIL_NEW_LOGS") and args[-1]=="2"*64): sys.exit(1)
  if args[:2]==["image","inspect"]:
   print("c"*40 if args[-1].endswith("d"*64) else ("e"*40 if os.getenv("BAD_LABEL") else "a"*40))
  if args[0]=="compose":
@@ -56,7 +68,7 @@ if command=="docker":
    if os.getenv("FAIL_ROLLBACK") and old: sys.exit(1)
   if "ps" in args: print("fixture-container")
 '''
-        for name in ["docker", "curl", "flock", "cosign"]:
+        for name in ["docker", "curl", "flock", "cosign", "timeout"]:
             p = self.bin / name
             p.write_text(fake)
             p.chmod(0o755)
@@ -126,3 +138,57 @@ if command=="docker":
         for digest in [DIGEST+";touch /tmp/never", "latest", "sha256:"+"g"*64]:
             self.assertEqual(self.run_deploy(digest, SHA).returncode, 2)
         self.assertEqual(self.calls(), [])
+
+    def test_main_moves_during_pull_without_stopping_or_rollback(self):
+        result = self.run_deploy(MOVE_MAIN="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(any("stop" in c[1] or "up" in c[1] for c in self.calls()))
+        self.assertEqual((self.base/"current-image").read_text().strip(), OLD)
+
+    def test_previous_log_is_private_and_captured_before_recreate(self):
+        result = self.run_deploy()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        logs = list(self.base.glob("container-" + "1"*64 + ".*.log"))
+        self.assertEqual(len(logs), 1)
+        self.assertEqual(logs[0].read_text(), "previous-release\n")
+        self.assertEqual(stat.S_IMODE(logs[0].stat().st_mode), 0o600)
+        calls = self.calls()
+        capture = next(i for i,c in enumerate(calls) if c[1][0]=="logs")
+        recreate = next(i for i,c in enumerate(calls) if "up" in c[1])
+        stopped = next(i for i,c in enumerate(calls) if "stop" in c[1])
+        self.assertLess(stopped, capture)
+        self.assertLess(capture, recreate)
+        self.assertEqual(calls[capture][1][1:4], ["--timestamps", "--tail", "1000"])
+
+    def test_log_capture_failure_restores_previous_app(self):
+        result = self.run_deploy(FAIL_LOGS="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Previous image restored", result.stderr)
+        self.assertEqual((self.base/"active").read_text(), OLD)
+        self.assertFalse(any("up" in c[1] and c[2].endswith(DIGEST) for c in self.calls()))
+
+    def test_rollback_preserves_failed_log(self):
+        result = self.run_deploy(FAIL_SMOKE="1")
+        self.assertNotEqual(result.returncode, 0)
+        logs = list(self.base.glob("container-" + "2"*64 + ".*.log"))
+        self.assertEqual(len(logs), 1)
+        self.assertEqual(logs[0].read_text(), "failed-release\n")
+        calls = self.calls()
+        capture = next(i for i,c in enumerate(calls) if c[1][0]=="logs" and c[1][-1]=="2"*64)
+        restore = next(i for i,c in enumerate(calls) if "up" in c[1] and c[2]==OLD)
+        self.assertLess(capture, restore)
+        self.assertEqual((self.base/"active").read_text(), OLD)
+
+    def test_rollback_continues_when_failed_log_capture_fails(self):
+        result = self.run_deploy(FAIL_SMOKE="1", FAIL_NEW_LOGS="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Previous image restored", result.stderr)
+        self.assertIn("Could not preserve failed container logs", result.stderr)
+        self.assertEqual((self.base/"active").read_text(), OLD)
+
+    def test_main_query_failure_after_pull_leaves_app_untouched(self):
+        result = self.run_deploy(FAIL_MAIN_AFTER_PULL="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(any("stop" in c[1] or "up" in c[1] or c[1][0]=="logs" for c in self.calls()))
+        self.assertNotIn("Deployment failed", result.stderr)
+        self.assertEqual((self.base/"current-image").read_text().strip(), OLD)
