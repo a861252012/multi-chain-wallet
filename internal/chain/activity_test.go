@@ -16,7 +16,7 @@ func TestReceiptMovements(t *testing.T) {
 	other := common.HexToAddress("0x2222222222222222222222222222222222222222")
 	tx := types.NewTx(&types.DynamicFeeTx{ChainID: big.NewInt(SepoliaID), To: &other, Value: big.NewInt(100), Gas: 21000})
 	receipt := &types.Receipt{TxHash: tx.Hash(), BlockHash: common.HexToHash("0x01"), BlockNumber: big.NewInt(10), GasUsed: 21000, EffectiveGasPrice: big.NewInt(2), Status: 1, Logs: []*types.Log{}}
-	movements, err := receiptMovements(tx, receipt, owner, owner)
+	movements, err := receiptMovements(tx, receipt, owner, owner, SepoliaID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,17 +24,17 @@ func TestReceiptMovements(t *testing.T) {
 		t.Fatalf("wrong outgoing ledger %+v", movements)
 	}
 	receipt.Status = 0
-	movements, err = receiptMovements(tx, receipt, owner, owner)
+	movements, err = receiptMovements(tx, receipt, owner, owner, SepoliaID)
 	if err != nil || len(movements) != 1 || movements[0].kind != movementFee {
 		t.Fatalf("revert moved principal %+v %v", movements, err)
 	}
 	receipt.Status = 1
-	movements, err = receiptMovements(tx, receipt, owner, other)
+	movements, err = receiptMovements(tx, receipt, owner, other, SepoliaID)
 	if err != nil || len(movements) != 1 || movements[0].kind != movementReceive {
 		t.Fatalf("receiver paid sender gas %+v %v", movements, err)
 	}
 	self := types.NewTx(&types.DynamicFeeTx{ChainID: big.NewInt(SepoliaID), To: &owner, Value: big.NewInt(100), Gas: 21000})
-	movements, err = receiptMovements(self, receipt, owner, owner)
+	movements, err = receiptMovements(self, receipt, owner, owner, SepoliaID)
 	if err != nil || len(movements) != 3 {
 		t.Fatalf("self transfer missing offset %+v %v", movements, err)
 	}
@@ -48,33 +48,33 @@ func TestReceiptTokenAndWETHMovementEvidence(t *testing.T) {
 	r := &types.Receipt{TxHash: tx.Hash(), BlockHash: common.HexToHash("0x01"), BlockNumber: big.NewInt(10), GasUsed: 30000, EffectiveGasPrice: big.NewInt(1), Status: 1}
 	log := &types.Log{Address: other, TxHash: r.TxHash, BlockHash: r.BlockHash, BlockNumber: 10, Index: 3, Data: common.LeftPadBytes(big.NewInt(100).Bytes(), 32), Topics: []common.Hash{transferTopic, common.BytesToHash(other.Bytes()), common.BytesToHash(owner.Bytes())}}
 	r.Logs = []*types.Log{log}
-	moves, err := receiptMovements(tx, r, other, owner)
+	moves, err := receiptMovements(tx, r, other, owner, SepoliaID)
 	if err != nil || len(moves) != 1 || moves[0].asset != other.Hex() || moves[0].kind != movementReceive {
 		t.Fatalf("token transfer %+v %v", moves, err)
 	}
 	log.Topics = append(log.Topics, common.Hash{})
-	moves, err = receiptMovements(tx, r, other, owner)
+	moves, err = receiptMovements(tx, r, other, owner, SepoliaID)
 	if err != nil || len(moves) != 0 {
 		t.Fatalf("ERC721 counted as ERC20 %+v %v", moves, err)
 	}
 	log.Address = weth
 	log.Topics = []common.Hash{withdrawalTopic, common.BytesToHash(owner.Bytes())}
-	moves, err = receiptMovements(tx, r, owner, owner)
+	moves, err = receiptMovements(tx, r, owner, owner, SepoliaID)
 	if err != nil || len(moves) != 3 || moves[1].kind != movementSend || moves[1].asset != weth.Hex() || moves[2].asset != "ETH" || moves[2].kind != movementReceive {
 		t.Fatalf("withdrawal %+v %v", moves, err)
 	}
 	log.Address = other
-	moves, err = receiptMovements(tx, r, other, owner)
+	moves, err = receiptMovements(tx, r, other, owner, SepoliaID)
 	if err != nil || len(moves) != 0 {
 		t.Fatalf("forged WETH event counted %+v %v", moves, err)
 	}
 	log.Removed = true
-	if _, err := receiptMovements(tx, r, owner, owner); err == nil {
+	if _, err := receiptMovements(tx, r, owner, owner, SepoliaID); err == nil {
 		t.Fatal("removed log accepted")
 	}
 	log.Removed = false
 	r.Logs = append(r.Logs, log)
-	if _, err := receiptMovements(tx, r, owner, owner); err == nil {
+	if _, err := receiptMovements(tx, r, owner, owner, SepoliaID); err == nil {
 		t.Fatal("duplicate log accepted")
 	}
 }

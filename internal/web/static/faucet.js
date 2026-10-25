@@ -11,7 +11,9 @@ window.claimTestTokens = async ({buttons, status, body, solana = false, tron = f
       method: 'POST', headers: {'Content-Type':'application/json', 'X-Wallet-CSRF':settings.csrfToken},
       body: JSON.stringify(body), signal: AbortSignal.timeout(55000),
     });
-    const result = await response.json();
+    let result;
+    try { result = await response.json(); }
+    catch { throw new Error('無法讀取領幣回應，結果未知。請先核對餘額與交易紀錄，不要直接重複申請。'); }
     if (!response.ok) throw new Error(result.error || '領取失敗，請稍後再試');
     const message = document.createElement('span');
     const link = document.createElement('a');

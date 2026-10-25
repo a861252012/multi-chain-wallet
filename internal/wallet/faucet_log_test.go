@@ -90,6 +90,25 @@ func TestSolanaFaucetDiagnosticStages(t *testing.T) {
 				if err == nil || !strings.Contains(output, "solana_airdrop_result_unknown") {
 					t.Fatalf("%v %s", err, output)
 				}
+				if strings.Contains(err.Error(), "secret-provider-token") || strings.Contains(err.Error(), server.URL) {
+					t.Fatal("sensitive upstream data returned")
+				}
+				events := make(map[string]map[string]any)
+				decoder := json.NewDecoder(strings.NewReader(output))
+				for decoder.More() {
+					var event map[string]any
+					if err := decoder.Decode(&event); err != nil {
+						t.Fatal(err)
+					}
+					events[event["msg"].(string)] = event
+				}
+				unknown := events["solana_airdrop_result_unknown"]
+				failed := events["solana_faucet_failed"]
+				for _, field := range []string{"error_type", "error_class", "upstream_http_status", "upstream_rpc_code"} {
+					if failed[field] != unknown[field] {
+						t.Fatalf("inconsistent %s: unknown=%v failed=%v", field, unknown, failed)
+					}
+				}
 				expected := map[string]string{"http502": `"upstream_http_status":502`, "rpc": `"upstream_rpc_code":-32005`, "timeout": `"error_class":"deadline_exceeded"`}[mode]
 				if !strings.Contains(output, expected) {
 					t.Fatal(output)

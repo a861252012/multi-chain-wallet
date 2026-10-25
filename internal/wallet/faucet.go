@@ -183,10 +183,15 @@ func (s *SolanaService) RequestTestSOL(ctx context.Context) (response *SolanaAir
 	started := time.Now()
 	stage := "wallet_status"
 	attempted := false
+	var upstreamErr error
 	defer func() {
 		if resultErr != nil {
+			cause := resultErr
+			if upstreamErr != nil {
+				cause = upstreamErr
+			}
 			fields := []any{"stage", stage, "airdrop_attempted", attempted, "duration_ms", time.Since(started).Milliseconds()}
-			fields = append(fields, faucetErrorFields(resultErr)...)
+			fields = append(fields, faucetErrorFields(cause)...)
 			logger.WarnContext(ctx, "solana_faucet_failed", fields...)
 		}
 	}()
@@ -213,6 +218,7 @@ func (s *SolanaService) RequestTestSOL(ctx context.Context) (response *SolanaAir
 	logger.InfoContext(ctx, "solana_airdrop_call_started", "amount_lamports", 10000000)
 	signature, err := s.rpc.RequestAirdrop(ctx, key, 10000000, "confirmed")
 	if err != nil {
+		upstreamErr = err
 		logger.WarnContext(ctx, "solana_airdrop_result_unknown", faucetErrorFields(err)...)
 		return nil, errors.New("Devnet 空投結果未知，請先查核交易與餘額，勿直接重複申請")
 	}

@@ -191,14 +191,10 @@ func (c *Client) Activity(ctx context.Context, hash string, owner common.Address
 	return activityToAPI(out), nil
 }
 
-func receiptMovements(tx *types.Transaction, r *types.Receipt, from, owner common.Address, chainIDs ...int64) ([]movementRecord, error) {
+func receiptMovements(tx *types.Transaction, r *types.Receipt, from, owner common.Address, chainID int64) ([]movementRecord, error) {
 	moves := []movementRecord{}
-	chainID := int64(SepoliaID)
-	if len(chainIDs) != 0 {
-		chainID = chainIDs[0]
-	}
 	native := "ETH"
-	if len(chainIDs) > 0 && chainIDs[0] == 80002 {
+	if chainID == PolygonAmoyID {
 		native = "POL"
 	}
 	add := func(kind movementKind, asset string, amount *big.Int, other common.Address, evidence string) {
@@ -264,7 +260,7 @@ func receiptMovements(tx *types.Transaction, r *types.Receipt, from, owner commo
 			}
 		}
 		// WETH9 uses Deposit/Withdrawal rather than mint/burn Transfer events.
-		if (len(chainIDs) == 0 || chainIDs[0] == SepoliaID) && l.Address == common.HexToAddress(SepoliaWETH) && len(l.Topics) == 2 && l.Topics[1] == ownerTopic {
+		if chainID == SepoliaID && l.Address == common.HexToAddress(SepoliaWETH) && len(l.Topics) == 2 && l.Topics[1] == ownerTopic {
 			if l.Topics[0] == depositTopic {
 				add(movementReceive, l.Address.Hex(), amount, l.Address, evidence+":deposit")
 			}

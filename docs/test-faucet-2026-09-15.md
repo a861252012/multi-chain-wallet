@@ -82,6 +82,11 @@ RPC code、錯誤類型／分類，不記原始錯誤文字、body、RPC data、
 請求標頭、私鑰、助記詞或憑證，避免服務回應反射敏感資料。
 前置失敗的 airdrop_attempted=false 代表尚未呼叫 RequestAirdrop；
 呼叫後錯誤一律維持 unknown，不自動重試。
+`result_unknown` 與最後的 `failed` 事件使用相同的上游錯誤分類；
+對外仍回傳去敏訊息，不包入原始上游錯誤。
+前置網路檢查仍回傳既有通用 RPC 錯誤；此階段可由 `network_check` 與
+`airdrop_attempted=false` 辨識，但不保留上游 HTTP／RPC 分類。
+瀏覽器收到無法解析的 POST 領幣回應時，顯示結果未知與先查核提醒，不顯示解析器錯誤或自動重送。
 response 事件是 handler 選擇的狀態，不證明代理或用戶端收到回應。
 
 以 TestSolanaFaucetDiagnosticStages 的本機 HTTP fixture 驗證錯網路、

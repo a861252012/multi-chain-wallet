@@ -29,6 +29,7 @@ let exists = true, balanceFailure = false, loseSendResponse = false, history = [
 let tronExists=false,tronHistory=[],tronSends=0;const tronAddress='TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH';
 let tronTokenSymbol='TEST';
 let solExists = false, solHistory = [], solSends = 0;
+let malformedFaucetResponse = false, solFaucetRequests = 0;
 const solAddress = 'CghaUzuHcKaSKQG3UtoZzMafEPmnRk1V6LUN2Hdp8XWa';
 const networks = {base:84532,optimism:11155420,arbitrum:421614,polygon:80002};
 const server = http.createServer(async (req,res)=>{
@@ -70,7 +71,12 @@ const server = http.createServer(async (req,res)=>{
    return respond({hash:'0x'+'f'.repeat(64),state:'submitted'});
   }
   if(pathname==='/api/faucet/tron'){res.statusCode=400;return respond({error:'Shasta 測試幣庫存不足'});}
-  if(pathname==='/api/faucet/solana'){res.statusCode=502;return respond({error:'Devnet 空投限流，請稍後再試'});}
+  if(pathname==='/api/faucet/solana'){
+   solFaucetRequests += 1;
+   res.statusCode=502;
+   if(malformedFaucetResponse)return res.end('<html>fixture gateway error</html>');
+   return respond({error:'Devnet 空投限流，請稍後再試'});
+  }
   if(pathname==='/api/network')return respond({chainId,block:'100',blockTime:new Date().toISOString(),checkedAt:new Date().toISOString()});
   if(pathname==='/api/wallet')return respond({exists:accountID ? Boolean(accountFixtures.find(item=>item.id===accountID)?.address) : exists,address,chainId,csrfToken:walletCSRF,exchange:chainId===11155111?{weth,usdc,router}:{}});
   if(pathname==='/api/wallet/accounts' && req.method==='GET')return respond(accountFixtures);
@@ -396,6 +402,7 @@ const server = http.createServer(async (req,res)=>{
     await page.locator('#contacts-list button').filter({hasText:'發送資產'}).click();
     assert.equal(await page.locator('#'+recipientID).inputValue(),value);
     await view('test-funding-panel');assert.equal(await page.locator(family==='solana'?'#sol-airdrop':'#tron-claim').isEnabled(),true);
+
   }
   console.log('PASS: activity navigation/refresh, hidden unavailable controls, faucets, own-wallet recipients, contact rename/search/undo/persistence and EVM/SOL/TRX isolation.');
 
@@ -588,6 +595,15 @@ const server = http.createServer(async (req,res)=>{
   await page.goto(base+'/solana/');await page.locator('#sol-setup').waitFor({state:'visible'});
   await page.locator('#sol-mnemonic').fill('fixture mnemonic');await page.locator('#sol-password').fill('fixture-password-only');await page.locator('#sol-password-confirm').fill('fixture-password-only');await page.locator('#sol-create button').click();
   await page.locator('#sol-dashboard').waitFor({state:'visible'});await page.waitForFunction(()=>document.querySelector('#sol-balance').textContent==='0.1 SOL');
+  await view('test-funding-panel');
+  malformedFaucetResponse = true;
+  const requestsBefore = solFaucetRequests;
+  await page.locator('#sol-airdrop').click();
+  await page.waitForFunction(()=>document.querySelector('#sol-funding-status').textContent.includes('結果未知'));
+  assert.match(await page.locator('#sol-funding-status').textContent(),/不要直接重複申請/);
+  assert.equal(solFaucetRequests, requestsBefore + 1, 'malformed faucet response is not retried');
+  assert.equal(await page.locator('#sol-airdrop').isEnabled(),true);
+  malformedFaucetResponse = false;
   await view('test-funding-panel');await page.locator('#sol-airdrop').click(); await page.waitForFunction(()=>document.querySelector('#sol-funding-status').textContent.includes('限流'));
   assert.equal(await page.locator('#sol-airdrop').isEnabled(),true);
   assert.equal(await page.locator('#sol-password').inputValue(),'');

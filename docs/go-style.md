@@ -21,6 +21,7 @@
 ## 可讀性與相容性
 
 - 分支使用早期返回及有限狀態的 `switch`。
+- 影響鏈別判斷的參數明確傳入；例如 `receiptMovements` 必須指定 `chainID`，不以可變參數隱含預設網路。
 - 使用 `min` 內建函式，以及標準函式庫的 `slices.SortFunc`／`SortStableFunc`、`slices.Clone`、`maps.Copy`、`errors.AsType`、`strings.SplitSeq` 與 `WaitGroup.Go`。
 - API 契約包含欄位名稱、`omitempty`、時間格式，以及 nil 與空陣列的差別。
 - EVM journal 相容缺少 `To`／`Action` 的舊紀錄，也接受舊 opaque quote ID。交易原始位元組與 hash 先持久化再廣播；並行更新使用 CAS 版本檢查與既有鎖順序。
