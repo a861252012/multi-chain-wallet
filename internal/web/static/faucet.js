@@ -7,6 +7,7 @@ window.claimTestTokens = async ({buttons, status, body, solana = false, tron = f
     const settingsResponse = await fetch('/api/faucet', {signal: AbortSignal.timeout(10000)});
     const settings = await settingsResponse.json();
     if (!settingsResponse.ok) throw new Error(settings.error || '無法讀取領幣設定');
+    if (tron && settings.tronEnabled !== true) throw new Error('尚未設定 Shasta 測試幣發放帳戶，請使用外部水龍頭');
     const response = await fetch('/api/faucet' + (solana ? '/solana' : tron ? '/tron' : ''), {
       method: 'POST', headers: {'Content-Type':'application/json', 'X-Wallet-CSRF':settings.csrfToken},
       body: JSON.stringify(body), signal: AbortSignal.timeout(55000),

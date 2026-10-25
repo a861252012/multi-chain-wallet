@@ -52,7 +52,7 @@ func NewFaucet(faucet *wallet.TestFaucet, solana *wallet.SolanaService, csrf str
 		http.NotFound(w, r)
 	}))
 	mux.HandleFunc("GET /api/faucet", localWalletFilter(csrf, func(w http.ResponseWriter, r *http.Request) {
-		respondWallet(w, 200, map[string]any{"enabled": len(faucet.Sources) > 0, "csrfToken": csrf}, nil)
+		respondWallet(w, 200, map[string]any{"enabled": len(faucet.Sources) > 0, "tronEnabled": faucet.TronSource != nil && faucet.TronRecipient != nil && faucet.TronPassword != "", "csrfToken": csrf}, nil)
 	}))
 	mux.HandleFunc("POST /api/faucet", localWalletFilter(csrf, func(w http.ResponseWriter, r *http.Request) {
 		var req struct {

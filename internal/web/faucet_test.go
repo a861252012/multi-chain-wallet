@@ -2,6 +2,7 @@ package web
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/a861252012/multi-chain-wallet/internal/wallet"
 	"log/slog"
 	"net/http/httptest"
@@ -62,5 +63,35 @@ func TestSolanaFaucetLogsRequestCorrelation(t *testing.T) {
 	}
 	if !strings.Contains(logs.String(), "wallet_status") || strings.Contains(logs.String(), "solana_airdrop_call_started") {
 		t.Fatal(logs.String())
+	}
+}
+
+func TestFaucetTronCapability(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		faucet  *wallet.TestFaucet
+		enabled bool
+	}{
+		{"EVM only", &wallet.TestFaucet{Sources: map[int64]*wallet.Service{1: {}}}, false},
+		{"source only", &wallet.TestFaucet{TronSource: &wallet.TronService{}}, false},
+		{"missing recipient", &wallet.TestFaucet{TronSource: &wallet.TronService{}, TronPassword: "fixture"}, false},
+		{"missing password", &wallet.TestFaucet{TronSource: &wallet.TronService{}, TronRecipient: &wallet.TronService{}}, false},
+		{"configured", &wallet.TestFaucet{TronSource: &wallet.TronService{}, TronRecipient: &wallet.TronService{}, TronPassword: "fixture"}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			NewFaucet(tc.faucet, nil, "fixture").ServeHTTP(w, httptest.NewRequest("GET", "http://localhost/api/faucet", nil))
+			var body struct {
+				Enabled     bool   `json:"enabled"`
+				TronEnabled bool   `json:"tronEnabled"`
+				CSRFToken   string `json:"csrfToken"`
+			}
+			if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+				t.Fatal(err)
+			}
+			if w.Code != 200 || body.Enabled != (tc.name == "EVM only") || body.TronEnabled != tc.enabled || body.CSRFToken != "fixture" {
+				t.Fatalf("unexpected capability: %d %s", w.Code, w.Body.String())
+			}
+		})
 	}
 }

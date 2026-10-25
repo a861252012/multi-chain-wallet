@@ -48,6 +48,8 @@ The wallet has **領取測試幣** buttons. EVM and TRON requests use a locally 
 
 The dispenser is disabled by default. Configure `TEST_FAUCET_CONFIG` with an owner-only (0600), ignored JSON file containing `accountId` and `password` for a dedicated EVM account registered in this installation. Optionally include `tronDir` and `tronPassword` for a separate Shasta wallet directory. Paths are configurable and interpreted inside the container. Never use a mainnet wallet or commit this file. A local installation needs funded EVM and TRON sources; cloning this repository does **not** include stock or credentials.
 
+TRON faucet configuration is exposed separately as `tronEnabled` by `GET /api/faucet`. It requires a dispenser service, its password, and a recipient service. When false or absent, the UI shows the missing-configuration message without posting a claim. This flag does not guarantee wallet existence, inventory, or network availability; the claim still validates those conditions.
+
 Amounts and networks are fixed by the server. EVM recipients must belong to the local account catalogue; TRON and Solana use the current local wallet address. EVM/TRON reuse matching transfers from the last hour, including unknown broadcasts, across restarts. The same-amount check includes manual transfers from the dispenser account. An hourly per-network limit also counts its other transactions. The dispenser shares the existing signer, network checks, journal and nonce protection; it cannot mint unlimited native coins. Refill its stock with a faucet when necessary. Automatic refill via third-party login/CAPTCHA is not implemented.
 
 See [button acceptance evidence and limits](test-faucet-2026-09-15.md).

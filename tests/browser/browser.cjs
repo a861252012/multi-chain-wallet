@@ -6,6 +6,7 @@ const path = require('node:path');
 const os = require('node:os');
 const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
+let tronFaucetEnabled = false, tronFaucetRequests = 0;
 const root = path.resolve(__dirname, '../..');
 // Render once with Go's production template engine; API responses remain local fixtures.
 const pages = JSON.parse(execFileSync('go', ['run', './tests/browser/render-templates'], {
@@ -64,13 +65,13 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==='/solana/api/send'){solSends += 1;solHistory=[{signature:'1'.repeat(88),to:solAddress,amount:'0.000001',state:'finalized',finalized:true}];return respond(solHistory[0]);}
   if(url.pathname.startsWith('/static/')){res.setHeader('Content-Type',url.pathname.endsWith('.css')?'text/css':'text/javascript');return res.end(await fs.readFile(path.join(root,'internal/web',url.pathname)));}
   if(pathname==='/' || pathname==='' || pathname==='/public-demo' || pathname==='/shared-demo'){res.setHeader('Content-Type','text/html');return res.end(pages['index-'+(pathname==='/public-demo'?'public':pathname==='/shared-demo'?'shared':'private')+'-'+(chainId===80002?'POL':'ETH')]);}
-  if(pathname==='/api/faucet' && req.method==='GET')return respond({enabled:true,csrfToken:'fixture'});
+  if(pathname==='/api/faucet' && req.method==='GET')return respond({enabled:true,tronEnabled:tronFaucetEnabled,csrfToken:'fixture'});
   if(pathname==='/api/faucet' && req.method==='POST'){
    assert.equal(req.headers['x-wallet-csrf'],'fixture'); assert.equal(body.address,address);
    assert.ok(['native','usdc'].includes(body.asset));
    return respond({hash:'0x'+'f'.repeat(64),state:'submitted'});
   }
-  if(pathname==='/api/faucet/tron'){res.statusCode=400;return respond({error:'Shasta 測試幣庫存不足'});}
+  if(pathname==='/api/faucet/tron'){tronFaucetRequests++;res.statusCode=400;return respond({error:'Shasta 測試幣庫存不足'});}
   if(pathname==='/api/faucet/solana'){
    solFaucetRequests += 1;
    res.statusCode=502;
@@ -682,7 +683,18 @@ const server = http.createServer(async (req,res)=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Solana mobile overflow');
   balanceFailure=false;await page.goto(base+'/tron/');await page.locator('#tron-setup').waitFor({state:'visible'});
   await page.locator('#tron-mnemonic').fill('fixture mnemonic');await page.locator('#tron-password').fill('fixture-password-only');await page.locator('#tron-password-confirm').fill('fixture-password-only');await page.locator('#tron-create button').click();
-  await page.locator('#tron-dashboard').waitFor({state:'visible'});await view('test-funding-panel');await page.locator('#tron-claim').click();await page.waitForFunction(()=>document.querySelector('#tron-funding-status').textContent.includes('庫存不足'));assert.equal(await page.locator('#tron-claim').isEnabled(),true);await page.waitForFunction(()=>document.querySelector('#tron-balance').textContent==='100 TRX');
+  await page.locator('#tron-dashboard').waitFor({state:'visible'});await view('test-funding-panel');
+  await page.locator('#tron-claim').click();
+  await page.waitForFunction(()=>document.querySelector('#tron-funding-status').textContent.includes('尚未設定 Shasta'));
+  assert.equal(tronFaucetRequests,0,'unconfigured TRON never posts a faucet request');
+  assert.equal(await page.locator('#tron-claim').isEnabled(),true);
+  tronFaucetEnabled=undefined;
+  await page.locator('#tron-claim').click();
+  await page.waitForFunction(()=>document.querySelector('#tron-funding-status').textContent.includes('尚未設定 Shasta'));
+  await page.waitForFunction(()=>!document.querySelector('#tron-claim').disabled);
+  assert.equal(tronFaucetRequests,0,'missing capability never posts a faucet request');
+  tronFaucetEnabled=true;
+  await page.locator('#tron-claim').click();await page.waitForFunction(()=>document.querySelector('#tron-funding-status').textContent.includes('庫存不足'));assert.equal(tronFaucetRequests,1);assert.equal(await page.locator('#tron-claim').isEnabled(),true);await page.waitForFunction(()=>document.querySelector('#tron-balance').textContent==='100 TRX');
   await view('send-panel');await page.locator('#tron-contract').fill(tronAddress);await page.locator('#tron-token-query').click();await page.waitForFunction(()=>document.querySelector('#tron-token-info').textContent.includes('TEST'));
   await page.locator('#tron-self').click();assert.equal(await page.locator('#tron-amount-label').textContent(),'數量');assert.equal(await page.locator('#tron-to').inputValue(),'');await page.locator('#tron-to').fill(tronAddress);
   tronCSRF='tron-after-restart';await page.locator('#tron-transfer button[type=submit]').click();
